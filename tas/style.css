@@ -1,0 +1,56 @@
+label:hover, td:hover,input[type="button"]:hover, input[type="submit"]:hover
+{
+	cursor:pointer;
+}
+
+#menu2, #menu3, #menu4
+{
+	display:none;	
+}
+
+table
+{
+	margin-top:30px;	
+}
+
+td, tr, table
+{
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+td
+{
+	 width:20px;
+    height:20px;
+}
+
+td, #alerts
+{
+	text-align:center;
+}	
+
+.espace
+{
+	display:inline-block;
+	margin-right:30px;
+}
+
+div
+{
+	margin-right: 100px;	
+}
+
+.corps, #alerts
+{
+	width:1150px;
+	margin:auto;
+	padding:10px;
+	border:grey dashed 1px;	
+	margin-bottom:10px;
+}
+
+table
+{
+	margin:auto;	
+}

@@ -1,0 +1,91 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<title>Tas de sable</title>
+<link rel="stylesheet" type="text/css" href="style.css"/>
+
+
+<script type="text/javascript" src="fonctions_js.js"></script>
+<script type="text/javascript">
+//<![CDATA[
+//]]>
+</script>
+</head>
+<body onload="init();">
+<p id="alerts"></p>
+<div class="corps">
+<div id="menu1">
+<form  action="#" onsubmit="menu1();return false;">
+<p><label for="nbl">Nombre de lignes : </label><input type="text" name="nbl" id="nbl" style="width:20px"/></p>
+<p><label for="nbc">Nombre de colonnes : </label><input type="text" name="nbc" id="nbc" style="width:20px"/></p>
+<p><input type="submit" value="Commencer !" name="sub1" /></p>
+</form>
+</div>
+
+
+<div id="menu2" style="display:none;">
+<form action="#" onsubmit="menu2();return false;">
+<p><label for="vall">Numéro de ligne : </label><input type="text" name="vall" id="vall" style="width:20px"/></p>
+<p><label for="valc">Numéro de colonne : </label><input type="text" name="valc" id="valc" style="width:20px" /></p>
+<p><label for="valcase">Valeur de la case : </label><input type="text" name="valcase" id="valcase" style="width:20px" value="0" /></p>
+<p><input type="submit" value="Changer" /></p>
+</form>
+</div>
+
+<div id="menu3" style="display:none;">
+<form action="#" onsubmit="alea();return false;">
+<p><label for="randmin">Min : </label><input type="text" name="randmin" id="randmin" style="width:20px"/></p>
+<p><label for="randmax">Max : </label><input type="text" name="randmax" id="randmax" style="width:20px" /></p>
+<p><input type="submit" value="Tas aléatoire entre min et max" /></p>
+</form>
+</div>
+
+<div id="menu6" style="display:none;">
+<form action="#" onsubmit="return false;">
+<p><input type="button" value="Jouer une case au hasard" onclick="jouerauhasard();"/></p>
+<p><input type="button" style="width:150px" id="letimer" value="Commencer le timer" onclick="lancertimer();"/><input type="text" name="timer_intervalle" id="timer_intervalle" style="width:20px;" value="250"/> ms</p>
+<p><input type="button" value="Obtenir la forme normale" onclick="finir();" /></p>
+</form>
+</div>
+
+<div id="menu5" style="display:none;">
+<form action="#" onsubmit="start();return false;">
+<p><input type="submit" id="bouton_change" value="Commencer la simulation" /></p>
+</form>
+</div>
+
+<div id="menu4" style="display:none;">
+<form action="#" onsubmit="style_cases();return false;">
+<p><label for="largeur">Largeur : </label><input type="text" name="largeur" id="largeur" style="width:20px" value="20"/> px</p>
+<p><label for="longueur">Hauteur : </label><input type="text" name="longueur" id="longueur" style="width:20px" value="20" /> px</p>
+<!-- <p><label for="couleur">Couleur : </label><input type="checkbox" id="couleur"/>(désactivé pour l'instant)</p> -->
+<p><input type="submit" value="Changer le style" /></p>
+</form>
+</div>
+
+<div id="menu7" style="display:none;">
+<p style="display:inline-block;margin-right:100px">
+Logical date : <span id="date">0</span><br /><br />
+Largeur env : <span id="largeurenv"></span><br />
+Hauteur env : <span id="longueurenv"></span><br />
+<input type="button" onclick="enveloppeconvexe();" value="Actualiser"/>
+</p>
+<p style="display:inline-block">
+Nombre de  0 : <span id="nb0"></span><br />
+Nombre de  1 : <span id="nb1"></span><br />
+Nombre de  2 : <span id="nb2"></span><br />
+Nombre de  3 : <span id="nb3"></span><br />
+Nombre de 4+ : <span id="nb4"></span><br />
+
+</p>
+
+</div>
+</div>
+
+<div id="content"></div>
+
+
+
+</body>
+</html>
