@@ -50,21 +50,23 @@
 
 \date{\today}
 %####################################################################
-%######################## CHANGELOG #################################
+%######################## LOG #################################
 %####################################################################
-%N'hésitez pas à utiliser cet endroit pour signaler les modifs apportées (notamment les commentaires sur le texte des autres).
+%N'hésitez pas à utiliser cet endroit pour signaler les modifications apportées ou de commentaires/questions sur certaines parties du document.
 
 % ~2015-09-28,Thomas:
 %	|- Cela peut être intéressant de signer quand on fait un commentaire.
-%	|- @Section6/Définition6.2(Sequence): La définition d'une Séquence est très proche de la définition d'un écoulement fini (@Section1(vers la fin)). Possibilité d'harmoniser pour n'avoir qu'une seule définition, commune celle-ci ?
-%	|- @Section1/Lemme1.4: ne faudrait-t-il pas remplacer "i'=i-a" (resp. "j'=j-c") par "i'=i-a+1" (resp. "j'=j-c+1"). En effet, en l'état, si i=a (resp. j=c), on a i'=0 (resp. j'=0). Dans ce cas, l'effondrement en (i',j') n'est pas défini, c'est bizarre.
+%	|- @Section1/Lemme1.4: ne faudrait-t-il pas remplacer "i'=i-a" (resp. "j'=j-c") par "i'=i-a+1" (resp. "j'=j-c+1"). En effet, en l'état, si i=a (resp. j=c), on a i'=0 (resp. j'=0). Dans ce cas, l'effondrement en (i',j') n'a pas de sens, c'est bizarre.
 %	|- @Section1/Lemme1.4: "(T(u+a,v+c))_{1<=u<=b-a,1<=v<=d-c}" a été remplacé par (T(u,v))_{a<=u<=b,c<=v<=d} pour plus de clarté.
+%	|- @Section6/Définition6.2(Sequence): La définition d'une Séquence est très proche de la définition d'un écoulement fini (@Section1(vers la fin)). Possibilité d'harmoniser pour n'avoir qu'une seule définition, commune celle-ci ?
+%	|- @Section8/Remarque8.3: "Cette définition implique g(v)>=e(v)+d(v)". L'idée est-t-elle qu'une case v doit contenir plus de e(v)+d(v) grains pour pouvoir s'effondrer ? Si oui, c'est pas très clair. On pourrait étendre la notion de case EFFONDRABLE de la section 1, puis mettre dans la définition 8.3 que v doit être une case effondrable.
+
 
 
 
 
 %####################################################################
-%######################## Fin CHANGELOG #############################
+%######################## Fin LOG #############################
 %####################################################################
 
 \begin{document}
@@ -169,7 +171,7 @@ Un écoulement fini est une famille de tas de sables $(T_k)_{0\leq k\leq n}$ tel
 
 Les sections suivantes ont pour but de présenter diverses preuves de terminaison de la règle de l'effondrement. C'est-à-dire montrer qu'un tas de sable quelconque ne peut subir qu'un nombre fini d'effondrements avant que plus aucune de ses piles ne puisse s'effondrer (\textit{i.e.} obtenir un tas de sable dont tout les coefficients sont compris entre 0 et 3).
 
-\section{Une première preuve de terminaison (par une mesure)[Thomas]}
+\section{Une première preuve de terminaison (par une mesure)[Thomas,Remy]}
 
 %Beaucoup de trucs pas très clairs dans cette partie
 Dans cette section, nous allons montrer la terminaison de la règle de l'effondrement sur les tas de sables finis. Pour cela, nous allons construire une fonction de valuation, qui va associer à chaque tas de sable une valeur entière. On montrera ensuite que cette valeur décroit strictement à chaque effondrement.
@@ -483,6 +485,7 @@ La case $c$ peut donc être située soit sur la couronne extérieure, soit sur l
 %Faire une liste de calculs et s'y référer dans la disjonction de cas. exemple d'un calcul: "effondrement d'une case de la couronne k entourée d'une case de la couronne k-1, d'une case de la couronne k+1 et de deux cases de la couronne k".
 
 %SAUTE UNE LIGNE !!! SATANE LATEX !!!
+%do medskip
 
 Liste des configurations possibles pour la case $c$ et ses voisines, et calculs correspondants pour $v(T)-v(T')$ :
 \begin{enumerate}
@@ -640,9 +643,22 @@ La proposition 2.4 permet d'établir la terminaison . En effet, si il existait u
 Cette preuve nous donne également une borne sur le nombre d'effondrement nécessaire pour arriver à un tas de sable non effondrable.
 
 \begin{theo}
-Soit $T$ un tas de sable fini. .
+Soit $T$ un tas de sable fini de taille $m \times n ( m > n )$ et dont les coefficients sont bornés par $t_0$. La taille d'un écoulement partant de T sera en $\mathrm{O} ( t_0 \times m^3 \times )$
 \end{theo}
 
+\begin{proof}
+
+La valuation de la matrice T vérifie:
+
+	\[
+    v(T) =  \sum\limits_{\substack{1 \leq i\leq m\\ 1 \leq j\leq n}} w_{m,n}\circ d_{m,n}(i,j)\times T(i,j)
+	\]
+
+    \[
+    v(T) < t_0 \times \sum\limits_{\substack{1 \leq i\leq m\\ 1 \leq j\leq n}} w_{m,n}(\lceil m/2 \rceil)
+    \]
+
+\end{proof}
 
 
 
@@ -1045,6 +1061,10 @@ Donc $V'=V$ et un écoulement infini effondre une infinité de fois chaque somme
 Soit $T$ un graphe de sable. Si $T$ a une fuite, alors il n'existe pas d'écoulement infini de graphe de sables partant de $T$.
 \end{theo}
 \begin{proof}
+% * <mathieu.huot@voila.fr> 2015-09-28T12:33:03.707Z:
+%
+%
+%
 La terminaison se démontre de façon similaire, par récurrence sur la taille des graphes. De même on obtient un écoulement cyclique où $|T|$ se conserve (on remarque que si $T$ a une fuite et $T\ra^*T'$ alors $T'$ a une fuite). Ainsi les cases qui ont une fuite ne s'effondre jamais, et on peut extraire un sous-graphe de sable avec un écoulement cyclique. Ce sous-graphe a aussi une fuite car par connexité du graphe on a forcément supprimé un voisin en extrayant un sous-graphe et donc ajouté une fuite, d'où une contradiction.
 \end{proof}
 
