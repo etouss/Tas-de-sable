@@ -18,7 +18,7 @@
 #define FULL_PLANE_MODE 0
 #define HALF_PLANE_MODE 1
 #define QUARTER_PLANE_MODE 2
-static int plane_mode = FULL_PLANE_MODE; //QUARTER_PLANE_MODE;
+static int plane_mode = QUARTER_PLANE_MODE;
 
 static int terminal_max_x = 0;
 static int terminal_max_y = 0;
@@ -98,7 +98,7 @@ void display_cursing_board ( void )
   }
   move (BOARDYOFFSET + 1 + endy - y, BOARDXOFFSET);
   addch(corner);
-  for (x = begx; x <= endx; x++) 
+  for (x = begx; x <= endx; x++)
     if ( (plane_mode == FULL_PLANE_MODE) || ((x-begx)%2 == 0) ) { /* every other one */
       addch(bot);
     } else {
@@ -236,8 +236,14 @@ void display_cursing_dims ( void )
 void display_cursing_mass_data ( void )
 {
   attron(COLOR_PAIR(COLPAIR4TEXT));/* text */
+  switch (selected_job) {
+  case TIME_JOB:
   mvprintw (1, 0, "M=%d T=%llu W=%d c0=%d c1=%d c2=%d c3=%d%s",
-	    mass, nbsteps, 1+2*used_radius, count0, count1, count2, count3, "\t\t" /*padding*/);
+	    mass, nbsteps, 1+2*used_radius, count0, count1, count2, count3, "\t\t" /*padding*/); break;
+  case AREA_JOB:
+  mvprintw (1, 0, "A=%d M=%d T=%llu W=%d c0=%d c1=%d c2=%d c3=%d%s",
+	    area, mass, nbsteps, 1+2*used_radius, count0, count1, count2, count3, "\t\t" /*padding*/); break;
+  }
   refresh();
 }
 

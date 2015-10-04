@@ -31,10 +31,10 @@ extern void dump_binary_board (FILE * stream, int * tab, int xd, int yd);
 /* local vars: */
 static bool board_inited = false;
 /* We store a physical array lboard[lsize = lxdim x lydim] of ints's.*/
-static int * lboard = NULL;	/* not yet inited */
-static int   lxdim = -1;	/* not yet inited */
-static int   lydim = -1;	/* not yet inited */
-static int   lsize = -1;	/* not yet inited */
+static int * lboard = NULL;	/* NULL = not yet inited */
+//static int   lxdim = -1;	/* not yet inited */
+//static int   lydim = -1;	/* not yet inited */
+//static int   lsize = -1;	/* not yet inited */
 
 /* LBOARD stores a part [x0..x1) x [y0..y1) of B[ℤxℤ], the logical space.
    <xdepl,ydepl> are the coords in lboard of the logical (0,0)
@@ -42,7 +42,7 @@ static int   lsize = -1;	/* not yet inited */
    entailing x1 = lxdim - xdepl && y1 == lydim - ydepl */
 static int xdepl = -1;		/* not yet inited */
 static int ydepl = -1;		/* not yet inited */
-static int x0, y0, x1, y1;
+//static int x0, y0, x1, y1;
 /* A pointer CBOARD points to virtual origin, &lboard[xdepl,ydepl] */
 static int * cboard = NULL;	/* not yet inited */
 
@@ -57,11 +57,10 @@ void realloc_board (int newxdim, int newydim, int newxdepl, int newydepl)
   TRACEINW("(xdim=%d,ydim=%d,xdepl=%d,ydepl=%d)",
 	   newxdim, newydim, newxdepl, newydepl);
   if ((xdim > newxdim) || (ydim > newydim)) {
-    fprintf (stderr, "ERROR: Can't realloc to smaller board. Asking for %dx%d, was %dx%d\n", newxdim, newydim, xdim, ydim);
-    fail();
+    cantcontinue ("ERROR: %s: Can't realloc to smaller board. Asking for %dx%d, was %dx%d\n", __func__, newxdim, newydim, xdim, ydim);
   }
   int * new_lboard = calloc (newsize, sizeof(int));
-  if (errno == ENOMEM) cantcontinue("Out of memory. Can't realloc board.\n");
+  if (errno == ENOMEM) cantcontinue("Out of memory. %s can't realloc board.\n", __func__);
   assert (new_lboard);
 
   for (p = new_lboard+newsize; p > new_lboard;)
@@ -112,28 +111,45 @@ extern int curr_val (int x, int y)
 
 /* while collapsing we have a waiting list of squares to process */
 static bool waitlist_inited = false;
+static size_t waiting_nbslots = 0;
 static int * waitinglist = NULL;
 static int * wait_curr = NULL;
 static int * wait_max = NULL;
-#define STACK_SIZE ((size_t)5*K10)
+#define STARTING_STACK_SIZE ((size_t)1000) /* suitable for non-challenging runs */
+/* #define MAX_STACK_SIZE ((size_t)5*K10) : Crashes for M=6257180 */
+#define MAX_STACK_SIZE ((size_t)M1) /* 10^6 */
+void alloc_waitlist (size_t nbslots)
+{
+  TRACEINW("(%zu)", nbslots);
+  // dump_waitinglist (stdout, true);
+  if (nbslots <= waiting_nbslots) {
+    cantcontinue("ERROR: %s(%zu): arg is below current=%zu.\n", __func__, nbslots, waiting_nbslots);
+  } else if (nbslots > MAX_STACK_SIZE) {
+    cantcontinue("ERROR: %s(%zu): arg is largest than max allowed=%zu.\n", __func__, nbslots, MAX_STACK_SIZE);
+  }
+  int delta = (waitlist_inited ? wait_curr - waitinglist : 0);
+  waitinglist = realloc(waitinglist, nbslots * 2 * sizeof(int));
+  if (errno == ENOMEM) {
+    cantcontinue("ERROR: %s(%zu): alloc failed.\n", __func__, nbslots);
+    /* NB: if realloc fails, old waitinglist has not been free'd */
+  }
+  assert (waitinglist != NULL);
+  waiting_nbslots = nbslots;
+  wait_max = waitinglist + nbslots*2;
+  wait_curr = waitinglist + delta;
+  //  dump_waitinglist (stdout, true);
+  TRACEOUT;
+}
+
 void init_waitlist ( void )
 {
   TRACEIN;
-  //  dump_waitinglist (stdout, true);
   if (waitlist_inited) {
     /* do nothing */
   } else {
-    assert (STACK_SIZE <= SIZE_MAX / 2);
-    size_t maxnbwaitingelems = STACK_SIZE * 2;
-    wait_curr = waitinglist = calloc (maxnbwaitingelems, sizeof(int));
-    if (errno == ENOMEM) {
-      cantcontinue("%s can't alloc for stack\n", __func__);
-    }
-    assert (waitinglist != NULL);
-    wait_max = waitinglist + maxnbwaitingelems;
+    alloc_waitlist (STARTING_STACK_SIZE);
     waitlist_inited = true;
   }
-  //  dump_waitinglist (stdout, true);
   TRACEOUT;
 }
 
@@ -149,7 +165,7 @@ void close_waitinglist ( void )
 void stackin_waiting (int x, int y)
 {
   if (wait_curr == wait_max) {
-    cantcontinue("Waiting list is full. Can't add to. FIXME: with resize?\n");
+    alloc_waitlist(waiting_nbslots + waiting_nbslots/2); /* increase by 50% */
   }
   *(wait_curr++) = x;		 /* push x 1st, see popping */
   assert (wait_curr < wait_max);/* need no test since we alloced even number */
@@ -188,8 +204,10 @@ void incr_square (int x, int y, int delta)
     if ((val%4 == 0) && (delta == 1)) stackin_waiting(x,y);
     break;
   }
+#ifdef TRACE
   if ((terminal_mode != false) && (anim_level >= 2))
     dump_waitinglist(stdout, false);
+#endif /* TRACE */
   TRACEOUT;
 }
 
@@ -199,7 +217,7 @@ void collapse (int x, int y)
   TRACEINW("(x=%d, y=%d)", x, y);
 
   if ((x <= xmin) || (x >= xmax) || (y <= ymin) || (y >= ymax)) {
-    TRACEMESS ("have to enlarge"o);
+    TRACEMESS ("have to enlarge");
     enlarge_envelop_around (x,y);
   }
   incr_square(x,y,-4);
@@ -226,9 +244,10 @@ void goto_normal_form ( void )
     y = *(--wait_curr);		/* pop y first, see pushing */
     x = *(--wait_curr);
     val = cboard[x*ydim+y];
-    if ((terminal_mode != false) && (anim_level >= 2)) {
+#ifdef TRACE
+    if ((terminal_mode != false) && (anim_level >= 2))
       printf ("We popped B[%d,%d]=%d\n", x, y, val);
-    }
+#endif /* TRACE */
     if (val > 3) {
       collapse(x,y);
     } else if (terminal_mode) {
@@ -259,7 +278,7 @@ void goto_normal_form ( void )
     fail();
   }
 #endif /* NDEBUG */
-  
+
   handle_terminated_board ();
 
   TRACEOUT;
@@ -280,7 +299,7 @@ void enlarge_envelop_around (int x, int y)
 #endif /* DEBUG_BINARY_BOARD */
   if (   (x + xdepl == 0) || (x + xdepl == xdim - 1)
 	 || (y + ydepl == 0) || (y + ydepl == ydim - 1)) {
-    realloc_board(xdim * 2 + 1, ydim * 2 + 1, xdim, ydim); /* assuming xdim was odd */
+    realloc_board (xdim * 2 + 1, ydim * 2 + 1, xdim, ydim); /* assuming xdim was odd */
   }
   if (x == xmin) {
     xmin--;
@@ -310,23 +329,6 @@ void enlarge_envelop_around (int x, int y)
   TRACEOUT;
 }
 
-void handle_terminated_board ( void )
-{
-  TRACEIN;
-#ifdef DEBUG_BINARY_BOARD
-  dump_binary_board (stdout, lboard, xdim, ydim);
-#endif /* DEBUG_BINARY_BOARD */
-  assert (mass == count1 + 2 * count2 + 3 * count3); /* since terminated */
-  assert (area == count0 + count1 + count2 + count3);/* since terminated */
-  assert (xmax == used_radius);
-  assert (ymax == used_radius);
-  assert (xmin + xmax == 0);
-  assert (ymin + ymax == 0);
-  record_normal_form (); /* on screen and on -o file */
-  record_this_board ();
-  TRACEOUT;
-}
-
 void init_board (int some_dim)
 {
   TRACEIN;
@@ -342,7 +344,7 @@ void init_board (int some_dim)
   mass = 0; nbsteps = 0; used_radius = 0; count1 = count2 = count3 = 0;
   area = count0 = 0;		/* init count0 */
   incr_square(0,0,0);		/* set orig as "used" */
-  record_initial_board ();
+  if (anim_level > 0) display_initial_board ();
   TRACESIGNEDMESS ("xdim=%d ydim=%d", xdim, ydim);
   TRACEOUT;
 }
@@ -361,7 +363,7 @@ void close_board ( void )
 
 void display_the_board (FILE * f)
 {
-  TRACEIN;
+  TRACEINW("(f=%p)", f);
   assert (xmin + used_radius >= 0);
   assert (xmax <= used_radius);
   assert (ymin + used_radius >= 0);
@@ -392,9 +394,9 @@ void dump_waitinglist (FILE * stream, bool statstoo)
   fprintf (stream, "== START DUMP_WAITINGLIST ==\n");
   if (statstoo) {
     fprintf (stream, "waitlist_inited = %s\n", boolstr(waitlist_inited));
-    fprintf (stream, "waitinglist = %p\n", waitinglist);
-    fprintf (stream, "wait_curr = %p\n", wait_curr);
-    fprintf (stream, "wait_max = %p\n", wait_max);
+    fprintf (stream, "waitinglist = %p\n", (void *)waitinglist);
+    fprintf (stream, "wait_curr = %p\n", (void *)wait_curr);
+    fprintf (stream, "wait_max = %p\n", (void *)wait_max);
   }
   if (waitlist_inited) {
     if (0 != (wait_curr - waitinglist) % 2) {

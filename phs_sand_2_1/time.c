@@ -13,6 +13,10 @@
 
 #define LENG4PFCSTR 28 /* max length required for printfcomma of ULLONG_MAX */
 
+/* checking time for snapshots */
+int snapshot_delay = 0;		/* user input. 0 means don't */
+time_t timer_start;		/* recorded time stamp */
+
 
 /* wallclock */
 #define STBUFSIZE (size_t)100
