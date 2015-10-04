@@ -1,14 +1,13 @@
 #ifndef MAKEDEPEND_IGNORE
+#include <print.h>	        /* from libphs */
+
 #include <stdlib.h> 	        /* exit, ..*/
 #include <assert.h>
 #include <getopt.h>		/* parsing args & options */
-#include <limits.h>		/* UINT_MAX */
-
-#include <print.h>	        /* from libphs */
+#include <curses.h>		/* used in cantcontinue */
 #endif /* MAKEDEPEND_IGNORE */
 
 #include "sand.h"
-#include "version.h"
 
 extern void parse_options (int argc, char *argv[]);
 extern void display_help (FILE *stream);
@@ -18,10 +17,12 @@ extern void display_help 	(FILE *stream);
 extern void list_calling_options(FILE *stream);
 extern void parse_ofile_arg     (char * arg);
 
-static bool   display_help_opt       = false; /* -h. Causes exit */
-static bool   display_flags_opt      = false; /* -l. Causes exit */
-static bool   display_version_opt    = false; /* -v. Causes exit */
-bool   fileaway_opt	      = false; /* -o <file> */
+static bool   display_help_opt       = false; /* -h Causes exit */
+//static bool   display_flags_opt      = false; /* -l Causes exit */
+static bool   display_version_opt    = false; /* -v Causes exit */
+static bool   underground_opt	     = false; /* -u Detach from terminal */
+static bool   graphical_opt	     = false; /* -g Detach from terminal */
+bool   fileaway_opt	      = false; /* -o <file> NOT YET IMPLEMENTED */
 
 static char * opt_ofile_path = NULL;
 
@@ -36,18 +37,20 @@ void parse_ofile_arg (char * arg)
   fileaway_opt = true;
 }
 
-const char * _std_sand_name_ = "sand";
-const char * _std_version_message_ = "%s version %s\n";
-const char * _std_help_message_ = "\
+#define _std_sand_name_ 	"sand"
+#define _std_version_message_ 	"%s version %s\n"
+#define sand_optstring 		"hvugt:n:d:"
+#define _std_help_message_ 	"\
 Usage: %s [-hv] [-n <num>] [-d <num>] [-o file]\n\
 \t-h : display this help message\n\
 \t-v : display version and exit\n\
+\t-u : underground mode, only output to logfile\n\
 \t-g : turn on graphical mode\n\
 \t-t <num> : set trace level\n\
-\t-n <num> : set value for max mass (default = %u)\n\
-\t-d <num> : set value for max board dim (default = %u)\n\
-\t-o <filename> : output summary in file\n\
-";
+\t-n <num> : set value for max mass (default = %d)\n\
+\t-d <num> : set value for max board dim (default = %d)\n\
+"
+//\t-o <filename> : output summary in file
 
 
 /* parsing arguments */
@@ -55,9 +58,9 @@ Usage: %s [-hv] [-n <num>] [-d <num>] [-o file]\n\
 void parse_options (int argc, char *argv[])
 {
   int op;
-  static unsigned int n_from_args;
+  static int n_from_args;
 
-  while ((op = getopt(argc, argv, "d:n:t:o:hvg")) != -1) {
+  while ((op = getopt(argc, argv, sand_optstring)) != -1) {
     switch (op) {
     case 'h':
       display_help_opt = true;
@@ -65,39 +68,42 @@ void parse_options (int argc, char *argv[])
     case 'v':
       display_version_opt = true;
       break;
+    case 'u':
+      underground_opt = true;
+      break;
     case 'g':
-      cursing_mode = true;
+      graphical_opt = true;
       break;
     case 'o': /* expects path for output file */
       printf ("option -o not yet implemented\n");
       //parse_ofile_arg (optarg);
       break;
     case 't': /* expects numerical value for n */
-      if (sscanf (optarg, "%u", &n_from_args) != 1) {
+      if (sscanf (optarg, "%d", &n_from_args) != 1) {
 	fprintf (stderr, "ERROR: %s: \"-t %s\" is not an integer argument.\n", __func__, optarg);
 	fail ();
-      } else if (n_from_args > MAX_ALLOWED_ANIM_LEVEL) {
-	fprintf (stderr, "ERROR: %s: \"-t %u\" is out of valid range 0..%u.\n", __func__, n_from_args, MAX_ALLOWED_ANIM_LEVEL);
+      } else if ((n_from_args < 0) || (n_from_args > MAX_ALLOWED_ANIM_LEVEL)) {
+	fprintf (stderr, "ERROR: %s: \"-t %d\" is out of valid range 0..%d.\n", __func__, n_from_args, MAX_ALLOWED_ANIM_LEVEL);
 	fail ();
       }
       set_value_for_anim_level (n_from_args);
       break;
     case 'n': /* expects numerical value for n */
-      if (sscanf (optarg, "%u", &n_from_args) != 1) {
+      if (sscanf (optarg, "%d", &n_from_args) != 1) {
 	fprintf (stderr, "ERROR: %s: \"-n %s\" is not an integer argument.\n", __func__, optarg);
 	fail ();
-      } else if (n_from_args > MAX_ALLOWED_HEIGHT) {
-	fprintf (stderr, "ERROR: %s: \"-n %u\" is out of valid range 0..%u.\n", __func__, n_from_args, MAX_ALLOWED_HEIGHT);
+      } else if  ((n_from_args < 0) || (n_from_args > MAX_ALLOWED_HEIGHT)) {
+	fprintf (stderr, "ERROR: %s: \"-n %d\" is out of valid range 0..%d.\n", __func__, n_from_args, MAX_ALLOWED_HEIGHT);
 	fail ();
       }
       set_value_for_height (n_from_args);
       break;
     case 'd': /* expects numerical value for d */
-      if (sscanf (optarg, "%u", &n_from_args) != 1) {
+      if (sscanf (optarg, "%d", &n_from_args) != 1) {
 	fprintf (stderr, "ERROR: %s: \"-d %s\" is not an integer argument.\n", __func__, optarg);
 	fail ();
-      } else if ((n_from_args > MAX_ALLOWED_DIM)) {
-	fprintf (stderr, "ERROR: %s: \"-d %u\" is out of valid range 0..%u.\n", __func__, n_from_args, MAX_ALLOWED_DIM);
+      } else if  ((n_from_args < 0) || (n_from_args > MAX_ALLOWED_DIM)) {
+	fprintf (stderr, "ERROR: %s: \"-d %d\" is out of valid range 0..%d.\n", __func__, n_from_args, MAX_ALLOWED_DIM);
 	fail ();
       }
       set_value_for_max_dim (n_from_args);
@@ -172,10 +178,26 @@ void process_options (int argc, char *argv[])
 
   parse_options (argc, argv);	/* first parse all. Crashing on errors */
 
-  if (display_help_opt)   display_help (stdout);
+  if (display_version_opt) display_version (stdout);
+  if (display_help_opt) display_help (stdout);
 
-  if (display_help_opt || display_flags_opt || display_version_opt) {
-    display_version (stdout);
+  if (display_help_opt || display_version_opt) {
     exit (EXIT_SUCCESS);	/* exits on -h and -l */
+  }
+  if (graphical_opt) {
+    if (underground_opt) {
+      cantcontinue("Graphical -g and underground -u modes incompatible\n");
+    } else {
+      cursing_mode = true;
+      terminal_mode = false;
+    }
+  }
+  if (underground_opt) {
+    if (with_data_file) {
+      underground_mode = true;
+      terminal_mode = false;
+    } else {
+      cantcontinue("Underground -u mode requires data_file mode\n");
+    }
   }
 }

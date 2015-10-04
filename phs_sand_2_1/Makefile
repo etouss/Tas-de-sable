@@ -14,19 +14,12 @@ LOADLIBES = #deprecated, defined here to avoid the annoying warning message
 LDFLAGS = -L.
 CFLAGS = $(DEFINES) -I. $(OFLAGS) -Wall -W
 
-
-ifeq ($(ONSUME),yes)
-OFLAGS := $(OFLAGS) -O4
-DEFINES := $(DEFINES) -DNDEBUG
-CFLAGS := $(CFLAGS) -std=$(STDC) -pedantic -Wno-format-zero-length
-else #not on sume
 DEFINES := $(DEFINES)
-CFLAGS := $(CFLAGS) -std=$(STDC) -pedantic
-endif
+CFLAGS := $(CFLAGS) -std=$(STDC) -pedantic -Wno-deprecated-declarations -Wno-unused-variable #in beta versions
 
 INSTALLDIR = $(HOME)/bin
 
-c-sources = display.c options.c sand.c time.c trace.c libphs.c
+c-sources = board.c display.c options.c sand.c time.c trace.c libphs.c
 
 h-files = sand.h trace.h version.h
 o-files = $(c-sources:.c=.o) 

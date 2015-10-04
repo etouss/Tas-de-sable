@@ -38,7 +38,7 @@ char * now_str (bool datetoo)
 /* memory & other resources usage */
 static struct rusage use;
 
-void display_rusage (FILE *f)
+void display_rusage (FILE *stream)
 {
   if (getrusage(RUSAGE_SELF, &use) != 0) {
     fprintf(stderr, "ERROR: %s: getrusage(..) failed\n", __func__);
@@ -46,13 +46,13 @@ void display_rusage (FILE *f)
   }
   double usr_time = ((double)1.0) * use.ru_utime.tv_sec + use.ru_utime.tv_usec / (double)1000000.0;
   double sys_time = ((double)1.0) * use.ru_stime.tv_sec + use.ru_stime.tv_usec / (double)1000000.0;
-  fprintf(f, "# %0.3f secs elapsed (user time)\n",	usr_time);
-  fprintf(f, "# %0.3f secs elapsed (system time)\n",	sys_time);
-  fprintf(f, "# %ld pages reclaims\n",			use.ru_minflt);
-  fprintf(f, "# %ld pages faults\n",			use.ru_majflt);
-  fprintf(f, "# %ld swaps\n",				use.ru_nswap);
-  fprintf(f, "# %ld voluntary context switches\n",	use.ru_nvcsw);
-  fprintf(f, "# %ld involuntary context switches\n",	use.ru_nivcsw);
+  fprintf(stream, "# %0.3f secs elapsed (user time)\n",	  usr_time);
+  fprintf(stream, "# %0.3f secs elapsed (system time)\n", sys_time);
+  fprintf(stream, "# %ld pages reclaims\n",		  use.ru_minflt);
+  fprintf(stream, "# %ld pages faults\n",		  use.ru_majflt);
+  fprintf(stream, "# %ld swaps\n",			  use.ru_nswap);
+  fprintf(stream, "# %ld voluntary context switches\n",	  use.ru_nvcsw);
+  fprintf(stream, "# %ld involuntary context switches\n", use.ru_nivcsw);
 }
 
 char pfc_s[LENG4PFCSTR];/* buffers shared for all modules */

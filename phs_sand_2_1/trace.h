@@ -1,6 +1,6 @@
 /* File: trace.h
  *
- * specific declarations for handling varying data size
+ * specific declarations for -DTRACE apparatus
  */
 
 /* trace.c */
@@ -14,6 +14,7 @@ extern void traceindentmess();
 
 #define DOTRACEINW(...)		do{traceindentin();printf (" %s", __func__); printf(__VA_ARGS__);terpri();}while(0)
 #define DOTRACEOUTW(...) 	do{traceindentout();printf(" %s <- ",__func__);printf(__VA_ARGS__);terpri();}while(0)
+#define DOTRACEOUTMESS(...) 	do{traceindentout();printf(" %s: ",__func__);printf(__VA_ARGS__);terpri();}while(0)
 #define DOTRACEOUT 		do{traceindentout();printf(" %s",__func__);terpri();}while(0)
 #define DOTRACEMESS(...) 	{traceindentmess();printf(__VA_ARGS__);terpri();}
 #define DOTRACESIGNEDMESS(...) 	{traceindentmess();printf("%s: ",__func__);printf(__VA_ARGS__);terpri();}
@@ -26,6 +27,7 @@ extern void traceindentmess();
 #define TRACEMESS(...)
 #define TRACEOUT
 #define TRACEOUTW(...)
+#define TRACEOUTMESS(...)
 #define TRACESIGNEDMESS(...)
 #define TRACEWAITFORCHAR
 #else
@@ -34,6 +36,7 @@ extern void traceindentmess();
 #define TRACEMESS(...) 		DOTRACEMESS(__VA_ARGS__)
 #define TRACEOUT 		DOTRACEOUT
 #define TRACEOUTW(...)		DOTRACEOUTW(__VA_ARGS__)
+#define TRACEOUTMESS(...)	DOTRACEOUTMESS(__VA_ARGS__)
 #define TRACESIGNEDMESS(...) 	DOTRACESIGNEDMESS(__VA_ARGS__)
 #define TRACEWAITFORCHAR	DOTRACEWAITFORCHAR
 #endif /* TRACE */
@@ -54,4 +57,3 @@ extern void traceindentmess();
 #define DEEPTRACEMESS(...)   	TRACEMESS(__VA_ARGS__)
 #define DEEPTRACEIN   		TRACEIN
 #endif /* DEEPTRACE */
-

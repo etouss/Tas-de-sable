@@ -1,4 +1,4 @@
-/* File: libphs.c -- Time-stamp: <Mon 28 Sep 2015 19:14 - phs>
+/* File: libphs.c -- Time-stamp: <Sat 03 Oct 2015 19:17 - phs>
  *
  */
 
@@ -10,6 +10,11 @@
 #include "print.h"
 
 bool crash_smoothly = false;
+
+const char * boolstr ( bool b)
+{
+  if (b) return "True"; else return "False";
+}
 
 void FFLUSH ( void )
 { fflush (stdout); fflush (stderr); }

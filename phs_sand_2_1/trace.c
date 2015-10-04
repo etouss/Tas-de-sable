@@ -23,7 +23,7 @@ static unsigned int tracelevel=0;
 void traceindentin()
 {
   if (tracelevel++ >= MAX_TRACE_LEVEL) {
-    fprintf (stderr, "ERROR: MAX_TRACE_LEVEL=%u reached\n", MAX_TRACE_LEVEL);
+    fprintf (stderr, "ERROR: MAX_TRACE_LEVEL=%d reached\n", MAX_TRACE_LEVEL);
     if (tracelevel > MAX_TRACE_LEVEL)
       fail();			/* we'd rather fail with traceout but there is the possibility of infinite loops */
   }
@@ -35,13 +35,13 @@ void traceindentin()
 void traceindentout()
 {
   if (tracelevel >= MAX_TRACE_LEVEL) {
-    fprintf (stderr, "ERROR: MAX_TRACE_LEVEL=%u reached\n", MAX_TRACE_LEVEL);
+    fprintf (stderr, "ERROR: MAX_TRACE_LEVEL=%d reached\n", MAX_TRACE_LEVEL);
     fail();
   }
   if (tracelevel == 0) {
     fprintf (stderr, "ERROR: trace level = 0?? Some TRACEIN must be missing\n");
     fail();
-  }  
+  }
   printf("%d<", tracelevel);
   if (tracelevel > 1)
     putnstrs("<<", tracelevel - 1);
