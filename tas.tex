@@ -665,11 +665,11 @@ La valuation de la matrice T vérifie:
 \section{Une deuxième preuve de terminaison (par une mesure euclidienne)[Mathieu,Etienne]}
 
 Dans cette section on définit une fonction sur les Tas dans $\mb{N}$ qui va strictement decroitre par effondrement.
-\\$\lambda(T) = 2*(m^2+n^2)*|T| - \sum_{i\leq m,j\leq n} (i^2 + (m-i)^2 + j^2 + (n-j)^2)*T(i,j)$
+\\$\lambda(T) = 2(m^2+n^2)|T'| - \sum_{i\leq m,j\leq n} (i^2 + (m-i)^2 + j^2 + (n-j)^2)*T(i,j)$
 Clairement $\lambda$ est à valeurs dans $\mb{N}$.
 Soit $T,T'$ tel que $T\xrightarrow{i,j}T'$ un effondrement sans perte,  montrons que $\lambda(T')<\lambda(T)$.
 \begin{eqnarray*}
-\lambda(T') & = & 2*(m^2+n^2)*|T'| - \sum_{i\leq m,j\leq n}(i^2 + (m-i)^2 + j^2 + (n-j)^2)*T'(i,j) \\
+\lambda(T') & = & 2(m^2+n^2)|T'| - \sum_{i\leq m,j\leq n}(i^2 + (m-i)^2 + j^2 + (n-j)^2)*T'(i,j) \\
 & & \mbox{as $|T| = |T'|$ :} \\
 \lambda(T') & = & \lambda(T) + 4(i^2 + (m-i)^2 + j^2 + (n-j)^2) \\
 & & - (((i+1)^2 + (m-(i+1))^2 + j^2 + (n-j)^2)) \\
@@ -688,7 +688,7 @@ Soit $T,T'$ tel que $T\xrightarrow{i,j}T'$ un effondrement avec perte.
 Alors $|T'|<|T|$ Supposons $\lambda(T') - \lambda(T) \geq 0$
 \begin{eqnarray*}
   0 & \leq & \lambda(T') - \lambda(T) \\
-  2(|T|-|T'|)(m^2+n^2) & \leq & \sum_{i\leq m,j\leq n} (i^2 + (m-i)^2 + j^2 + (n-j)^2)*T(i,j) \\
+  2(m^2+n^2)(|T|-|T'|) & \leq & \sum_{i\leq m,j\leq n} (i^2 + (m-i)^2 + j^2 + (n-j)^2)*T(i,j) \\
   & & - \sum_{i\leq m,j\leq n} (i^2 + (m-i)^2 + j^2 + (n-j)^2)*T'(i,j) \\
 \end{eqnarray*}
 Notons $E(i,j) = \left\{\begin{array}{ll}
@@ -700,12 +700,12 @@ Notons $E'(i,j) = \left\{\begin{array}{ll}
     0  & \mbox{otherwise} \\
 \end{array}\right. $
 \begin{eqnarray*}
-  2(|T|-|T'|)(m^2+n^2) & \leq & E(i+1,j) * ((i+1)^2 + (m-(i+1))^2 + j^2 + (n-j)^2) \\
+  2(m^2+n^2)(|T|-|T'|) & \leq & E(i+1,j) * ((i+1)^2 + (m-(i+1))^2 + j^2 + (n-j)^2) \\
   && +  E(i-1,j) *(m-(i-1))^2 + j^2 + (n-j)^2)) \\
   && +  E(i,j-1) *((i^2 + (m-i)^2 + (j+1)^2 + (n-(j-1))^2)) \\
   && +  E(i,j+1) *((i^2 + (m-i)^2 + (j+1)^2 + (n-(j+1))^2)) \\
   && - 4(i^2 + (m-i)^2 + j^2 + (n-j)^2)\\
-  2(|T|-|T'|)(m^2+n^2) & \leq & 8 \\
+  2(m^2+n^2)(|T|-|T'|) & \leq & 8 \\
   && +  E'(i+1,j) * ((i+1)^2 + (m-(i+1))^2 + j^2 + (n-j)^2) \\
   && +  E'(i-1,j) *(m-(i-1))^2 + j^2 + (n-j)^2)) \\
   && +  E'(i,j-1) *((i^2 + (m-i)^2 + (j+1)^2 + (n-(j-1))^2)) \\
@@ -713,16 +713,21 @@ Notons $E'(i,j) = \left\{\begin{array}{ll}
 \end{eqnarray*}
 
 Or $\sum E'(x,y) = |T|-|T'|$
-Donc on a juste a montré que : $2(m^2+n^2) < (x^2 + (m-x)^2 + y^2 + (n-y)^2)$ est absurde (Inégalité strict grace au 8).
+Donc on a juste a montré que : \\
+$2(m^2+n^2) < (x^2 + (m-x)^2 + y^2 + (n-y)^2)$ est absurde (Inégalité strict grace au 8).
 \begin{eqnarray*}
   2(m^2+n^2) & < & (x^2 + (m-x)^2 + y^2 + (n-y)^2)\\
-  &&2*(m + n) < -2mx -2ny
+  m^2 + n^2 & < & 2x(x-m)+2y(y-n)
 \end{eqnarray*}
-or $x \in [-1;m]$ et $y \in [-1;n]$
-donc $max_x(-2mx) = 2m$ et $max_y(-2ny) = 2n$
-En conclusion $2*(m + n) < -2mx -2ny$ est absurde.
-Alors $\lambda(T') < \lambda(T)$
+On cherche à borner les valeurs, on a $x \in [-1;m+1]$ et $y \in [-1;n+1]$ \\
+Pour $n>4$, $n^2/2 > 2(n+1)$ (resp. $m$) \\
+Pour $n<=4$, $n^2/2 < 2(n+1)$ (resp. $m$) \\
+donc $max_{[-1;m+1]}(2x(x-m)) < m^2/2 + 2(m+1)$ et $max_{[-1;n+1]}(2y(y-n)) < n^2$ \\
+En conclusion $m^2 + n^2 < -2mx -2ny$ est absurde. \\
+Alors $\lambda(T') < \lambda(T)$ \\
 Donc la fonction lambda est décroissante.
+
+% A finir c'est chiant.
 
 
 
