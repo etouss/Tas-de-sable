@@ -5,6 +5,7 @@
 
 #ifndef MAKEDEPEND_IGNORE
 #include <limits.h> 		/* (U)INT_MAX */
+#include <time.h> 		/* time_t */
 #endif /* MAKEDEPEND_IGNORE */
 
 #include "version.h"
@@ -20,6 +21,7 @@
 #define MAX_ALLOWED_HEIGHT         INT_MAX
 #define MAX_ALLOWED_DIM	           1000000
 #define MAX_ALLOWED_ANIM_LEVEL     2
+#define MAX_ALLOWED_SNAPSHOT_DELAY 3600*24*7 /* 1 week !!! */
 
 #define DEFAULT_HEIGHT   100
 #define DEFAULT_INIT_DIM 3 /* 31 / * odd value prefered */
@@ -51,10 +53,13 @@ extern void prepare_cursing_message ( void );
 
 /* options.c */
 extern void process_options (int argc, char *argv[]);
+extern void output_calling_options (FILE * f, const char * beg, const char * sep, const char * end);
 
 /* time.c */
 extern char * now_str (bool datetoo);
 extern void display_rusage (FILE *stream);
+extern int snapshot_delay; /* user input */
+extern time_t timer_start; /* starting point for snapshot_delay */
 
 /* MAIN */
 
@@ -63,7 +68,11 @@ extern bool cursing_mode;
 extern bool underground_mode;
 extern bool with_data_file;
 
-extern int  anim_level;		/* user input */
+#define AREA_JOB 1
+#define TIME_JOB 2
+#define DEFAULT_JOB TIME_JOB
+extern int selected_job;	/* user input */
+extern int anim_level;		/* user input */
 extern int max_height;		/* user input */
 extern int max_dim;		/* user input */
 extern int xdim, ydim;
@@ -80,12 +89,13 @@ extern int count1;
 extern int count2;
 extern int count3;
 
-extern void set_value_for_anim_level (int n);
 extern void set_value_for_height (int n);
 extern void set_value_for_max_dim (int d);
-extern void record_normal_form ( void );
-extern void record_initial_board ( void );
-extern void record_this_board ( void );
+extern void set_value_for_anim_level (int n);
+extern void set_value_for_snapshot_delay (int x);
+extern void record_normal_form (FILE * stream);
+extern void display_initial_board ( void );
+extern void display_this_board ( void );
 
 /* cursing-smart fail message */
 #define cantcontinue(...) do{if(cursing_mode){prepare_cursing_message();printw(__VA_ARGS__);wait_in_cursing();terminate_cursing();}else{fprintf(stderr,__VA_ARGS__);}fail();}while(0)
