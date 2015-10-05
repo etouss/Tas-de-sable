@@ -38,7 +38,7 @@ per = [x for x in range(1,len(mass)) if nb3[x-1] > 2*nb3[x]]
 
 # print(per)
 # print([sat[x-1] for x in per])
-print(sum([sat[x-1] for x in per])/len(per))
+# print(sum([sat[x-1] for x in per])/len(per))
 
 # print([s for s in sat if s == 0.3333333333333333])
 # plt.plot(mass,nb1,label='nb1')

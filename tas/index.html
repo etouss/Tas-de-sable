@@ -34,17 +34,32 @@
 </div>
 
 <div id="menu3" style="display:none;">
-<form action="#" onsubmit="alea();return false;">
-<p><label for="randmin">Min : </label><input type="text" name="randmin" id="randmin" style="width:20px"/></p>
-<p><label for="randmax">Max : </label><input type="text" name="randmax" id="randmax" style="width:20px" /></p>
+<form id="formalea1" action="#" onsubmit="alea1();return false;">
+<p><label for="randmin">Min : </label><input type="text" name="randmin" id="randmin" style="width:20px" value="0"/></p>
+<p><label for="randmax">Max : </label><input type="text" name="randmax" id="randmax" style="width:20px" value="4" /></p>
+<p><select name="pattern" id="pattern">
+	<option value="partout">partout</option>
+	<option value="rectangle">rectangle</option>
+	<option value="losange">losange</option>
+	<option value="cercle">cercle</option>	
+</select></p>
 <p><input type="submit" value="Tas aléatoire entre min et max" /></p>
+</form>
+<form style="display:none;" id="formalea2" action="#" onsubmit="alea();return false;">
+<p id="indication"></p>
+<p id="pabx1"><label for="abx1">Numéro de ligne 1 : </label><input type="text" name="abx1" id="abx1" style="width:20px" value=""/></p>
+<p id="paby1"><label for="aby1">Numéro de colonne 1: </label><input type="text" name="aby1" id="aby1" style="width:20px" value="" /></p>
+<p id="pabx2"><label for="abx2">Numéro de ligne 1 : </label><input type="text" name="abx2" id="abx2" style="width:20px" value=""/></p>
+<p id="paby2"><label for="aby2">Numéro de colonne 1: </label><input type="text" name="aby2" id="aby2" style="width:20px" value="" /></p>
+<p id="pr"><label for="rayon">Rayon : </label><input type="text" name="rayon" id="rayon" style="width:20px" value=""/></p>
+<p><input type="submit" value="Suite" /></p>
 </form>
 </div>
 
 <div id="menu6" style="display:none;">
 <form action="#" onsubmit="return false;">
 <p><input type="button" value="Jouer une case au hasard" onclick="jouerauhasard();"/></p>
-<p><input type="button" style="width:150px" id="letimer" value="Commencer le timer" onclick="lancertimer();"/><input type="text" name="timer_intervalle" id="timer_intervalle" style="width:20px;" value="250"/> ms</p>
+<p><input type="button" style="width:150px" id="letimer" value="Commencer le timer" onclick="lancertimer();"/><br /><input type="text" name="timer_intervalle" id="timer_intervalle" style="width:20px;" value="250"/> ms</p>
 <p><input type="button" value="Obtenir la forme normale" onclick="finir();" /></p>
 </form>
 </div>
@@ -59,13 +74,13 @@
 <form action="#" onsubmit="style_cases();return false;">
 <p><label for="largeur">Largeur : </label><input type="text" name="largeur" id="largeur" style="width:20px" value="20"/> px</p>
 <p><label for="longueur">Hauteur : </label><input type="text" name="longueur" id="longueur" style="width:20px" value="20" /> px</p>
-<!-- <p><label for="couleur">Couleur : </label><input type="checkbox" id="couleur"/>(désactivé pour l'instant)</p> -->
+<p><label for="taille_police">Police : </label><input type="text" name="taille_police" id="taille_police" style="width:20px" value="16" /> px</p>
 <p><input type="submit" value="Changer le style" /></p>
 </form>
 </div>
 
 <div id="menu7" style="display:none;">
-<p style="display:inline-block;margin-right:100px">
+<p style="display:inline-block;margin-right:50px">
 Logical date : <span id="date">0</span><br /><br />
 Largeur env : <span id="largeurenv"></span><br />
 Hauteur env : <span id="longueurenv"></span><br />
@@ -77,6 +92,7 @@ Nombre de  1 : <span id="nb1"></span><br />
 Nombre de  2 : <span id="nb2"></span><br />
 Nombre de  3 : <span id="nb3"></span><br />
 Nombre de 4+ : <span id="nb4"></span><br />
+Masse totale : <span id="masse"></span>
 
 </p>
 

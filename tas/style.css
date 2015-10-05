@@ -1,7 +1,15 @@
+body
+{
+	font-size:16px;	
+	padding:0px;
+	margin:0px;
+}
+
 label:hover, td:hover,input[type="button"]:hover, input[type="submit"]:hover
 {
 	cursor:pointer;
 }
+
 
 #menu2, #menu3, #menu4
 {
@@ -21,7 +29,7 @@ td, tr, table
 
 td
 {
-	 width:20px;
+	width:20px;
     height:20px;
 }
 
@@ -36,21 +44,48 @@ td, #alerts
 	margin-right:30px;
 }
 
-div
+
+#alerts
 {
-	margin-right: 100px;	
+	position:fixed;
+	padding:10px;
+	border-bottom:grey dashed 1px;	
+	margin-top:0px;
+	background-color:white;
+
+	width:100%;
+	position : fixed;
+	top:0px;
+		
 }
 
-.corps, #alerts
+.corps
 {
-	width:1150px;
-	margin:auto;
+	position:fixed;
 	padding:10px;
 	border:grey dashed 1px;	
-	margin-bottom:10px;
+	
+	background-color:white;
+	width:200px;
+	top:50px;
+}
+
+.corps div
+{
+	margin-bottom:20px;
+	background-color:rgb(206,212,255);	
+	padding:2px;
+	text-align:center;
+}
+
+
+#content
+{
+	margin-top:100px;
+	margin-left:230px;	
 }
 
 table
 {
-	margin:auto;	
+		
 }
