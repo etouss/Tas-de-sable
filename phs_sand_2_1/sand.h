@@ -6,9 +6,11 @@
 #ifndef MAKEDEPEND_IGNORE
 #include <limits.h> 		/* (U)INT_MAX */
 #include <time.h> 		/* time_t */
+#include <curses.h>		/* used in cantcontinue */
 #endif /* MAKEDEPEND_IGNORE */
 
 #include "version.h"
+#include "trace.h"
 
 /* useful constants: */
 #define K1   1000
@@ -17,6 +19,9 @@
 #define M1   1000000
 #define M10  10000000
 #define M100 100000000
+
+#define SERVER_UNAME           "sume"
+#define REQUIRED_DIR_ON_SERVER "/local/phs"
 
 #define MAX_ALLOWED_HEIGHT         INT_MAX
 #define MAX_ALLOWED_DIM	           1000000
@@ -31,14 +36,19 @@
 
 #define UNUSEDSQ INT_MIN
 
+/* board.c */
+//extern int xdim, ydim;		/* dimension for alloc'ed board */
+extern int xmin, xmax, ymin, ymax; /* dimensions for virtual board */
+extern void get_mass_from_snapshot (const char * path, long int * mass_var);
+
 /* collapse.c */
 extern int  curr_val (int x, int y);
 extern void init_board (int some_dim);
 extern void close_board ( void );
-extern void display_the_board (FILE * stream);
+extern void display_the_board (FILE * stream, bool withvars);
 extern void collapse (int x, int y);
 extern void goto_normal_form ( void );
-extern void increase_orig_mass (int delta);
+extern void add_grains_on_origin (int delta);
 
 /* display.c */
 extern char char_for_val (int val);
@@ -48,12 +58,24 @@ extern void display_cursing_board ( void );
 extern void display_cursing_dims ( void );
 extern void display_cursing_mass_data ( void );
 extern void wait_in_cursing ( void );
-extern void try_curses ( void );/* FIXME: to be erased lated */
 extern void prepare_cursing_message ( void );
 
+/* memmat.c */
+extern bool memmatrix_inited ();
+extern int  memmatrix_xdim ();
+extern int  memmatrix_ydim ();
+extern int* memmatrix (int i, int j);
+extern void realloc_memmatrix (int xincr, int yincr, int xshift, int yshift, int valnews);
+extern void dump_current_memmatrix (FILE * stream);
+
+
 /* options.c */
-extern void process_options (int argc, char *argv[]);
+extern void process_calling_arguments (int argc, char *argv[]);
 extern void output_calling_options (FILE * f, const char * beg, const char * sep, const char * end);
+
+/* system.c */
+extern const char * machine_uname ( void );
+extern const char * cwd ( void ); /* current working dir */
 
 /* time.c */
 extern char * now_str (bool datetoo);
@@ -67,22 +89,21 @@ extern bool terminal_mode;
 extern bool cursing_mode;
 extern bool underground_mode;
 extern bool with_data_file;
+extern bool from_snapshot_mode;
 
 #define AREA_JOB 1
 #define TIME_JOB 2
 #define DEFAULT_JOB TIME_JOB
 extern int selected_job;	/* user input */
+extern const char * snapshot_source_file_arg; /* user input */
 extern int anim_level;		/* user input */
 extern int max_height;		/* user input */
 extern int max_dim;		/* user input */
-extern int xdim, ydim;
-extern int xmin, xmax, ymin, ymax;
 
 /* output data maintained by program */
 extern int mass;
-extern int current_dim;
 extern int area;
-extern int used_radius;
+extern int diam;
 extern unsigned long long int nbsteps;
 extern int count0;
 extern int count1;

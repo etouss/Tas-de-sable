@@ -15,11 +15,11 @@ LDFLAGS = -L.
 CFLAGS = $(DEFINES) -I. $(OFLAGS) -Wall -W
 
 DEFINES := $(DEFINES)
-CFLAGS := $(CFLAGS) -std=$(STDC) -pedantic -Wno-deprecated-declarations -Wno-unused-variable #in beta versions
+CFLAGS := $(CFLAGS) -std=$(STDC) -pedantic -Wno-deprecated-declarations #-Wno-unused-variable #in beta versions
 
 INSTALLDIR = $(HOME)/bin
 
-c-sources = board.c display.c options.c sand.c time.c trace.c libphs.c
+c-sources = board.c display.c memmat.c options.c sand.c system.c time.c trace.c libphs.c
 
 h-files = sand.h trace.h version.h
 o-files = $(c-sources:.c=.o) 
@@ -43,8 +43,11 @@ zip :
 
 # DO NOT DELETE, UPDATE WITH "MAKE DEPEND"
 
-display.o: trace.h sand.h
-options.o: sand.h version.h
-sand.o: trace.h sand.h
-time.o: sand.h
+board.o: sand.h version.h trace.h
+display.o: sand.h version.h trace.h
+memmat.o: sand.h version.h trace.h
+options.o: sand.h version.h trace.h
+sand.o: sand.h version.h trace.h
+system.o: sand.h version.h trace.h
+time.o: sand.h version.h trace.h
 trace.o: trace.h
