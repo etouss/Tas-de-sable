@@ -235,13 +235,17 @@ void display_cursing_dims ( void )
 void display_cursing_mass_data ( void )
 {
   attron(COLOR_PAIR(COLPAIR4TEXT));/* text */
-  switch (selected_job) {
-  case TIME_JOB:
-  mvprintw (1, 0, "M=%d T=%llu W=%d c0=%d c1=%d c2=%d c3=%d%s",
-	    mass, nbsteps, diam, count0, count1, count2, count3, "\t\t" /*padding*/); break;
-  case AREA_JOB:
-  mvprintw (1, 0, "A=%d M=%d T=%llu W=%d c0=%d c1=%d c2=%d c3=%d%s",
-	    area, mass, nbsteps, diam, count0, count1, count2, count3, "\t\t" /*padding*/); break;
+  switch (selected_report) {
+  case NEW_MASS:
+    mvprintw (1, 0, "M=%d T=%llu W=%d c0=%d c1=%d c2=%d c3=%d%s",
+	      mass, nbsteps, diam, count0, count1, count2, count3, "\t\t" /*padding*/);
+    break;
+  case NEW_AREA:
+    mvprintw (1, 0, "A=%d M=%d T=%llu W=%d c0=%d c1=%d c2=%d c3=%d%s",
+	      area, mass, nbsteps, diam, count0, count1, count2, count3, "\t\t" /*padding*/);
+    break;
+  default:
+    cantcontinue("ERROR: %s: Unknown selected_report = %d.\n", __func__, selected_report);
   }
   refresh();
 }

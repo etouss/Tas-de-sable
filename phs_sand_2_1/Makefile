@@ -19,9 +19,9 @@ CFLAGS := $(CFLAGS) -std=$(STDC) -pedantic -Wno-deprecated-declarations #-Wno-un
 
 INSTALLDIR = $(HOME)/bin
 
-c-sources = board.c display.c memmat.c options.c sand.c system.c time.c trace.c libphs.c
+c-sources = $(shell ls *.c)
 
-h-files = sand.h trace.h version.h
+h-files = $(shell ls *.h)
 o-files = $(c-sources:.c=.o) 
 
 tagsfiles = $(c-sources) $(h-files)

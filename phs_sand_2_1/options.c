@@ -8,6 +8,8 @@
 #endif /* MAKEDEPEND_IGNORE */
 
 #include "sand.h"
+#include "utils.h"
+#include "version.h"
 
 extern void parse_options (int argc, char *argv[]);
 extern void display_help (FILE *stream);
@@ -22,7 +24,7 @@ static bool   display_version_opt    = false; /* -v Causes exit */
 static bool   underground_opt	     = false; /* -u Detach from terminal */
 static bool   graphical_opt	     = false; /* -g Show with curses */
 static bool   interactive_opt	     = false; /* -i Keys control showing flow */
-bool   fileaway_opt	      = false; /* -o <file> NOT YET IMPLEMENTED */
+bool          fileaway_opt           = false; /* -o <file> NOT YET IMPLEMENTED */
 
 static char * opt_ofile_path = NULL;
 
@@ -39,12 +41,13 @@ void parse_ofile_arg (char * arg)
 
 #define _std_sand_name_ 	"sand"
 #define _std_version_message_ 	"%s version %s\n"
-#define sand_optstring 		"hvjugn:s:f:t:d:j:"
+#define sand_optstring 		"hvj:ugn:s:f:t:d:"
 #define _std_help_message_ 	"\
-Usage: %s [-hv] [-n <num>] [-d <num>] [-o file]\n\
+Usage: %s [-n <num>] ..\n\
 \t-h : display this help message\n\
 \t-v : display version and exit\n\
-\t-j <jobname> : select job among { time (= default), area }\n\
+\t-j <jobname> : select job among { pile (= default), squareNNN, diamondNNN }\n\
+\t\tNumeric option NNN is number of extra grains (default = 1)\n\
 \t-u : underground mode, only output to logfile\n\
 \t-g : turn on graphical mode\n\
 \t-n <num> : set value for max mass (default = %d)\n\
@@ -74,48 +77,71 @@ void output_calling_options (FILE * f, const char * beg, const char * sep, const
   fputs(end, f);
 }
 
+#define sand_cheatopts "D"
+#define sand_fulloptsstring sand_optstring""sand_cheatopts
+
 void parse_options (int actual_argc, char *actual_argv[])
 {
   int op;
   static int n_from_args;
   argc = actual_argc; argv = actual_argv;
-
-  while ((op = getopt(argc, argv, sand_optstring)) != -1) {
+  TRACEIN;
+  while ((op = getopt(argc, argv, sand_fulloptsstring)) != -1) {
     switch (op) {
-    case 'h':
-      display_help_opt = true;
-      break;
-    case 'v':
-      display_version_opt = true;
-      break;
-    case 'u':
-      underground_opt = true;
-      break;
+    case 'D': cheat_opt = true; break;
     case 'g':
-      graphical_opt = true;
-      break;
+      graphical_opt = true; break;
+    case 'h':
+      display_help_opt = true; break;
     case 'i':
       printf ("option -i not yet implemented\n");
-      interactive_opt = true;
-      break;
+      interactive_opt = true; break;
+    case 'u':
+      underground_opt = true; break;
+    case 'v':
+      display_version_opt = true; break;
     case 'j':
-      if (strcmp(optarg, "time") == 0) {
-	selected_job = TIME_JOB;
-      } else if (strcmp(optarg, "area") == 0) {
-	selected_job = AREA_JOB;
+      assert(optarg);
+      if (strcmp(optarg, "pile") == 0) {
+	selected_job = PILE_JOB;
+      } else if (strncmp(optarg, "square", 6) == 0) {
+	selected_job = SQUARE_JOB;
+	if (optarg[6] == '\0') {
+	  nb_toppling_grains = 1;	/* default */
+	} else {
+	  read_longint_val_in_range(optarg+6, &nb_toppling_grains, 0, MAX_ALLOWED_TOPPLING, "nb_toppling_grains");
+	}
+	TRACEMESS("optarg \"%s\" gives nb_toppling = %ld.", optarg, nb_toppling_grains);
+      } else if (strncmp(optarg, "diamond", 7) == 0) {
+	selected_job = DIAMOND_JOB;
+	if (optarg[7] == '\0') {
+	  nb_toppling_grains = 1;	/* default */
+	} else {
+	  read_longint_val_in_range(optarg+7, &nb_toppling_grains, 0, MAX_ALLOWED_TOPPLING, "nb_toppling_grains");
+	}
+	TRACEMESS("optarg \"%s\" gives nb_toppling = %ld.", optarg, nb_toppling_grains);
+      } else if (strncmp(optarg, "special", 7) == 0) {
+	selected_job = SPECIAL_JOB;
+	if (optarg[7] != '\0') {
+	  read_longint_val_in_range(optarg+7, &sp_job_number, 0, MAX_SPECIAL_JOB, "sp_job_number");
+	}
+	TRACEMESS("optarg \"%s\" gives sp_job_number = %ld.", optarg, sp_job_number);
       } else {
 	cantcontinue ("Option \"-j %s\" not understood.\n", optarg);
       }
       break;
     case 'o': /* expects path for output file */
+      assert(optarg);
       printf ("option -o not yet implemented\n");
       //parse_ofile_arg (optarg);
       break;
     case 'f': /* expects path for snapshot file */
+      assert(optarg);
       snapshot_source_file_arg = optarg;
       from_snapshot_mode = true;
       break;
     case 's': /* expects numerical value for n */
+      assert(optarg);
       if (sscanf (optarg, "%d", &n_from_args) != 1) {/*FIXME: prefer strtol*/
 	fprintf (stderr, "ERROR: %s: \"-s %s\" is not an integer argument.\n", __func__, optarg);
 	fail ();
@@ -126,6 +152,7 @@ void parse_options (int actual_argc, char *actual_argv[])
       set_value_for_snapshot_delay (n_from_args);
       break;
     case 't': /* expects numerical value for n */
+      assert(optarg);
       if (sscanf (optarg, "%d", &n_from_args) != 1) {/*FIXME: prefer strtol*/
 	fprintf (stderr, "ERROR: %s: \"-t %s\" is not an integer argument.\n", __func__, optarg);
 	fail ();
@@ -136,6 +163,7 @@ void parse_options (int actual_argc, char *actual_argv[])
       set_value_for_anim_level (n_from_args);
       break;
     case 'n': /* expects numerical value for n */
+      assert(optarg);
       if (sscanf (optarg, "%d", &n_from_args) != 1) {/*FIXME: prefer strtol*/
 	fprintf (stderr, "ERROR: %s: \"-n %s\" is not an integer argument.\n", __func__, optarg);
 	fail ();
@@ -146,6 +174,7 @@ void parse_options (int actual_argc, char *actual_argv[])
       set_value_for_height (n_from_args);
       break;
     case 'd': /* expects numerical value for d */
+      assert(optarg);
       if (sscanf (optarg, "%d", &n_from_args) != 1) {/*FIXME: prefer strtol*/
 	fprintf (stderr, "ERROR: %s: \"-d %s\" is not an integer argument.\n", __func__, optarg);
 	fail ();
@@ -167,6 +196,7 @@ void parse_options (int actual_argc, char *actual_argv[])
 	     __func__, argv[optind]);
     fail();
   }
+  TRACEOUT;
 }
 
 void display_help (FILE *stream)
@@ -205,6 +235,7 @@ static char* progname;
 
 void process_calling_arguments (int argc, char *argv[])
 {
+TRACEIN;
   progname = argv[0];
 
   parse_options (argc, argv);	/* first parse all. Crashing on errors */
@@ -216,6 +247,7 @@ void process_calling_arguments (int argc, char *argv[])
   if (display_help_opt) display_help (stdout);
 
   if (display_help_opt || display_version_opt) {
+    TRACEOUT;
     exit (EXIT_SUCCESS);	/* exits on -h and -l */
   }
   if (graphical_opt) {
@@ -239,4 +271,6 @@ void process_calling_arguments (int argc, char *argv[])
       }
     }
   }
+  TRACEOUT;
 }
+

@@ -20,6 +20,7 @@
 //#define DEBUG_BINARY_BOARD
 
 #include "sand.h"
+#include "utils.h"
 
 /* THE LOGICAL BOARD stores a part [xmin..xmax] x [ymin..ymax] of B[ℤxℤ], the logical space.
    <xdepl,ydepl> are the coords in memmatrix of the logical (0,0)
@@ -44,7 +45,6 @@ int count1 = 0;			/* number of squares that contain 1 */
 int count2 = 0;			/* number of squares that contain 2 */
 int count3 = 0;			/* number of squares that contain 3 */
 int area = 0;			/* number of used squares */
-//int used_radius = 0;
 unsigned long long int nbsteps = 0;
 
 void display_board_vars (FILE * f)
@@ -64,7 +64,7 @@ void display_board_vars (FILE * f)
 /* local functions: */
 extern void add_grains_on_square (int x, int y, int delta);
 extern void enlarge_envelop_for (int x, int y);
-extern void handle_terminated_board ( void );
+extern void deal_with_normal_form ( void );
 extern void init_board_contents_from_snapshot (const char * path, bool justheader);
 extern void get_res_filename_from_snapshot (const char * path);
 extern void init_waitlist ( void );
@@ -104,6 +104,10 @@ void enlarge_underlying_mat ( void )
   TRACEIN;
   assert (xdim == memmatrix_xdim());
   assert (ydim == memmatrix_ydim());
+#ifdef TRACE
+  int prev_xdim = xdim;
+  int prev_ydim = ydim;
+#endif /* TRACE */
   realloc_memmatrix (xdim+1, ydim+1, 1+xdim/2, 1+ydim/2, UNUSEDSQ);
   xdepl += 1+xdim/2;
   ydepl += 1+ydim/2;
@@ -162,6 +166,11 @@ void alloc_waitlist (size_t nbslots)
   wait_curr = waitinglist + delta;
   //  dump_waitinglist (stdout, true);
   TRACEOUT;
+}
+
+bool stabilized_p ( void )
+{
+  return (wait_curr == waitinglist ? true : false);
 }
 
 void init_waitlist ( void )
@@ -258,8 +267,8 @@ void collapse (int x, int y)
 void goto_normal_form ( void )
 {
   TRACEIN;
+  if (cheat_opt) goto skip_all;
 
-  bool finished = false;
   int x, y, val;
   while (wait_curr > waitinglist) {
     assert (wait_curr >= waitinglist+2);
@@ -280,6 +289,7 @@ void goto_normal_form ( void )
 #ifndef NDEBUG
   // FIXME: REMOVE LATER
   // CHECK FOR SAFETY:
+  bool finished = false;
   int count = 0;
   do {
     finished = true; /* tentatively */
@@ -301,8 +311,8 @@ void goto_normal_form ( void )
   }
 #endif /* NDEBUG */
 
-  handle_terminated_board ();
-
+ skip_all:
+  deal_with_normal_form ();
   TRACEOUT;
 }
 
@@ -416,22 +426,6 @@ void dump_waitinglist (FILE * stream, bool statstoo)
   }
 }
 
-void read_longint_val_in_range (char * s, long int * val, long int range_min, long int range_max, const char * varname) /* varname is used for error messages */
-{
-  TRACEINW("(\"%s\",min=%ld,max=%ld)", s, range_min, range_max);
-  char * endptr = NULL;
-  long int res = strtol(s, &endptr, 10);
-  if (*endptr != '\0') {
-    cantcontinue("ERROR: value \"%s\" for %s is not a number.\n", s, varname);
-  } else if (errno == ERANGE) {
-    cantcontinue("ERROR: value \"%s\" for %s cannot be scanned as a long int.\n", s, varname);
-  } else if ((res < range_min) || (res > range_max)) {
-    cantcontinue("ERROR: value %ld for %s not in valid range %ld..%ld.\n", res, varname, range_min, range_max);
-  }
-  val[0] = res;
-  TRACEOUTW("%s=%ld", varname, *val);
-}
-
 /* READ A SNAPSHOT FILE */
 
 /* HEADER variables: where we store the data copied from snapshot header */
@@ -523,7 +517,7 @@ void init_board_contents_from_snapshot (const char * path, bool justheader)
   int file_linenum = 0;
   int matrix_linenum = 0;
   int linenum_of_matrixtop = -1;
-  int mbeg, mend, mlen;
+  int mbeg, mend, mlen = -1;
   int radius;
   if (path == NULL) {
     cantcontinue("No snapshot path?\n");
@@ -565,9 +559,8 @@ void init_board_contents_from_snapshot (const char * path, bool justheader)
   }
   if (diam_snap%2 != 1) {
     cantcontinue("ERROR: D=%ld is not odd ?!. -f snapshot only accepts PILE jobs, with symmetrical boards.\n", diam_snap);
-  } else {
-    radius = (diam_snap+1)/2;
   }
+  radius = (diam_snap+1)/2;
 
   /* 2nd loop: looking for top line */
   TRACEMESS("Starting 2nd loop: looking for top of board");
@@ -598,7 +591,7 @@ void init_board_contents_from_snapshot (const char * path, bool justheader)
     if (regexec(&regex2, linebuff, NMATCH, matches, 0) == 0) {
       TRACEMESS("match rx2: %s", linebuff);
       mbeg = matches[1].rm_so; mend = matches[1].rm_eo;
-      if (mend != mbeg + mlen) {
+      if (mend != mbeg + mlen) { /* this is mlen from top_line  */
       mlen_error:
 	cantcontinue("ERROR: snapshot format not respected in %s : lines %d and %d have different lengths: %d and %d.\n", path, linenum_of_matrixtop, file_linenum, mlen, mend - mbeg);
       } else if (matrix_linenum != diam_snap) {
@@ -611,7 +604,7 @@ void init_board_contents_from_snapshot (const char * path, bool justheader)
       TRACEMESS("match rx3: %s",  linebuff);
       matrix_linenum++;
       mbeg = matches[1].rm_so; mend = matches[1].rm_eo;
-      if (mend != mbeg + mlen) {
+      if (mend != mbeg + mlen) { /* this is mlen from top_line  */
 	goto mlen_error;
       } else {
 	linebuff[mend] = '\0';	/* truncate linebuff */
@@ -645,11 +638,12 @@ void init_board_contents_from_snapshot (const char * path, bool justheader)
     cantcontinue("Snapshot file %s claims c2=%ld but I found %d\n", path, c2_snap, count2);
   if (c3_snap != count3)
     cantcontinue("Snapshot file %s claims c3=%ld but I found %d\n", path, c3_snap, count3);
-  /* nbsteps cannot be infered, we copy it from header */
+  /* nbsteps value cannot be inferred from snapshot, we copy it from header */
   nbsteps = nbsteps_snap;
 
- clean_quit:			/* we branch there when justheader */
-  fclose(snapshotfile);
+ clean_quit:			 /* we branch there when JUSTHEADER */
+  if (fclose(snapshotfile) != 0) /* reading is finished */
+    cantcontinue("ERROR: %s: fclose failed.\n", __func__);
   free(linebuff);		/* NB: free NULL is ok */
   TRACEOUT;
 }
