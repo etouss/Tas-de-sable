@@ -5,7 +5,6 @@
 #include <assert.h>
 #include <getopt.h>		/* parsing args & options */
 #include <string.h>		/* strcmp */
-#include <curses.h>		/* used in cantcontinue */
 #endif /* MAKEDEPEND_IGNORE */
 
 #include "sand.h"
@@ -40,17 +39,18 @@ void parse_ofile_arg (char * arg)
 
 #define _std_sand_name_ 	"sand"
 #define _std_version_message_ 	"%s version %s\n"
-#define sand_optstring 		"hivugs:t:n:d:j:"
+#define sand_optstring 		"hvjugn:s:f:t:d:j:"
 #define _std_help_message_ 	"\
 Usage: %s [-hv] [-n <num>] [-d <num>] [-o file]\n\
 \t-h : display this help message\n\
 \t-v : display version and exit\n\
-\t-j <jobname> : choose among possible jobs among {time, area}\n\
+\t-j <jobname> : select job among { time (= default), area }\n\
 \t-u : underground mode, only output to logfile\n\
 \t-g : turn on graphical mode\n\
-\t-s <num> : take a snapshot every <num> seconds (default = don't)\n\
-\t-t <num> : set trace level\n\
 \t-n <num> : set value for max mass (default = %d)\n\
+\t-s <num> : take a snapshot every <num> seconds (default = don't)\n\
+\t-f <filename> : start from given snapshot\n\
+\t-t <num> : set trace level\n\
 \t-d <num> : set value for max board dim (default = %d)\n\
 "
 // NOT YET IMPLEMENTED:
@@ -104,15 +104,19 @@ void parse_options (int actual_argc, char *actual_argv[])
       } else if (strcmp(optarg, "area") == 0) {
 	selected_job = AREA_JOB;
       } else {
-	cantcontinue ("Option \"-j %s\" not understood\n", optarg);
+	cantcontinue ("Option \"-j %s\" not understood.\n", optarg);
       }
       break;
     case 'o': /* expects path for output file */
       printf ("option -o not yet implemented\n");
       //parse_ofile_arg (optarg);
       break;
+    case 'f': /* expects path for snapshot file */
+      snapshot_source_file_arg = optarg;
+      from_snapshot_mode = true;
+      break;
     case 's': /* expects numerical value for n */
-      if (sscanf (optarg, "%d", &n_from_args) != 1) {
+      if (sscanf (optarg, "%d", &n_from_args) != 1) {/*FIXME: prefer strtol*/
 	fprintf (stderr, "ERROR: %s: \"-s %s\" is not an integer argument.\n", __func__, optarg);
 	fail ();
       } else if ((n_from_args < 0) || (n_from_args > MAX_ALLOWED_SNAPSHOT_DELAY)) {
@@ -122,7 +126,7 @@ void parse_options (int actual_argc, char *actual_argv[])
       set_value_for_snapshot_delay (n_from_args);
       break;
     case 't': /* expects numerical value for n */
-      if (sscanf (optarg, "%d", &n_from_args) != 1) {
+      if (sscanf (optarg, "%d", &n_from_args) != 1) {/*FIXME: prefer strtol*/
 	fprintf (stderr, "ERROR: %s: \"-t %s\" is not an integer argument.\n", __func__, optarg);
 	fail ();
       } else if ((n_from_args < 0) || (n_from_args > MAX_ALLOWED_ANIM_LEVEL)) {
@@ -132,7 +136,7 @@ void parse_options (int actual_argc, char *actual_argv[])
       set_value_for_anim_level (n_from_args);
       break;
     case 'n': /* expects numerical value for n */
-      if (sscanf (optarg, "%d", &n_from_args) != 1) {
+      if (sscanf (optarg, "%d", &n_from_args) != 1) {/*FIXME: prefer strtol*/
 	fprintf (stderr, "ERROR: %s: \"-n %s\" is not an integer argument.\n", __func__, optarg);
 	fail ();
       } else if  ((n_from_args < 0) || (n_from_args > MAX_ALLOWED_HEIGHT)) {
@@ -142,7 +146,7 @@ void parse_options (int actual_argc, char *actual_argv[])
       set_value_for_height (n_from_args);
       break;
     case 'd': /* expects numerical value for d */
-      if (sscanf (optarg, "%d", &n_from_args) != 1) {
+      if (sscanf (optarg, "%d", &n_from_args) != 1) {/*FIXME: prefer strtol*/
 	fprintf (stderr, "ERROR: %s: \"-d %s\" is not an integer argument.\n", __func__, optarg);
 	fail ();
       } else if  ((n_from_args < 0) || (n_from_args > MAX_ALLOWED_DIM)) {
@@ -199,11 +203,14 @@ const char * compile_defs ( void )
 
 static char* progname;
 
-void process_options (int argc, char *argv[])
+void process_calling_arguments (int argc, char *argv[])
 {
   progname = argv[0];
 
   parse_options (argc, argv);	/* first parse all. Crashing on errors */
+
+  /* After we have parsed the optional arguments, we set the right flags accordingly. This is the place where
+     we do sanity checks *before* launching the actual computations. */
 
   if (display_version_opt) display_version (stdout);
   if (display_help_opt) display_help (stdout);
@@ -213,7 +220,7 @@ void process_options (int argc, char *argv[])
   }
   if (graphical_opt) {
     if (underground_opt) {
-      cantcontinue("Graphical -g and underground -u modes incompatible\n");
+      cantcontinue("Graphical -g and underground -u modes incompatible.\n");
     } else {
       cursing_mode = true;
       terminal_mode = false;
@@ -224,7 +231,12 @@ void process_options (int argc, char *argv[])
       underground_mode = true;
       terminal_mode = false;
     } else {
-      cantcontinue("Underground -u mode requires data_file mode\n");
+      cantcontinue("Underground -u mode requires data_file mode.\n");
+    }
+    if (strcmp(machine_uname(), SERVER_UNAME) == 0) {
+      if (strncmp(cwd(), REQUIRED_DIR_ON_SERVER, sizeof(REQUIRED_DIR_ON_SERVER) - 1) != 0) {
+	cantcontinue("Underground -u mode on machine %s required being in dir %s.\n", SERVER_UNAME, REQUIRED_DIR_ON_SERVER);
+      }
     }
   }
 }

@@ -4,16 +4,12 @@
 #include <errno.h>
 #include <stdlib.h> 		/* daemon, alloc & free */
 #include <alloca.h> 		/* alloca */
-#include <sys/utsname.h>	/* uname() */
 #include <unistd.h>             /* usleep() */
 #include <time.h>		/* time() */
-#include <curses.h>
 #include <stdio.h>
 #include <assert.h>
 #endif /* MAKEDEPEND_IGNORE */
 
-
-#include "trace.h"
 #include "sand.h"
 
 /* local functions: none */
@@ -23,25 +19,13 @@ bool terminal_mode = true;	/* default mode */
 bool cursing_mode = false;
 bool underground_mode = false;
 bool with_data_file = true;
+bool from_snapshot_mode = false;
 
 int selected_job = DEFAULT_JOB; /* user input */
+const char * snapshot_source_file_arg = NULL; /* user input */
 int anim_level = 0;		/* user input */
 int max_height = 0;		/* user input */
 int max_dim = 0;		/* user input */
-int xdim, ydim = 0;             /* dim of alloc'ed array */
-int xmin, xmax, ymin, ymax = 0;	/* coord of extremal points */
-int xdepl, ydepl = 0;	        /* coord of logical (0,0) in array */
-//int * * the_board = NULL;
-/* output data maintained by program */
-int mass = 0;
-int current_dim = 0;
-int area = 0;
-int used_radius = 0;
-unsigned long long int nbsteps = 0;
-int count0 = 0;
-int count1 = 0;
-int count2 = 0;
-int count3 = 0;
 
 bool okij (int i, int j) /* useful in debugging */
 {
@@ -89,15 +73,17 @@ void take_snapshot ( void )
 {
   TRACEIN;
   char * buff = alloca(150);
-  if (errno == ENOMEM) cantcontinue("ERROR: %s can't alloc for string buff\n", __func__);
+  if (errno == ENOMEM) cantcontinue("ERROR: %s can't alloc for string buff.\n", __func__);
   assert (buff);
+  /* snapshot filename and contents do not depend on selected_job */
   sprintf (buff, "snapshot_sand_v%s_M%d.txt", SANDPILE_VERSION, mass);
   FILE * f = fopen(buff, "w");
-  assert(f);//FIXME: not a real check of fopen success
+  if (f == NULL)
+    cantcontinue("ERROR: %s: Could not open file %s.\n", __func__, buff);
   record_normal_form(f);
-  display_the_board(f);
+  display_the_board(f, false);
   fflush (f);
-  fclose (f);
+  if (fclose (f) != 0) cantcontinue("ERROR: %s: fclose failed.\n", __func__);
   TRACEOUT;
 }
 
@@ -106,7 +92,6 @@ void record_normal_form (FILE * f)
   static time_t now;
   static int prev_nbsteps = 0;
   static int prev_diam = 0;
-  int diam = 1+2*used_radius;	/* FIXME: should be maintained in board.c */
   if (with_data_file) {
     assert (f);
     switch (selected_job) {
@@ -115,7 +100,7 @@ void record_normal_form (FILE * f)
       break;
     case AREA_JOB:
       fprintf (f, "A=%d M=%d T=%llu D=%d c0=%d c1=%d c2=%d c3=%d\n", area, mass, nbsteps, diam, count0, count1, count2, count3);
-      display_the_board (f);
+      display_the_board (f, false);
       break;
     }
     if ( (nbsteps - prev_nbsteps > K100) || (diam > prev_diam) )
@@ -147,12 +132,12 @@ void handle_terminated_board ( void )
 {
   TRACEINW(": mass=%d", mass);
 #ifdef DEBUG_BINARY_BOARD
-  dump_binary_board (stdout, lboard, xdim, ydim);
+  dump_memmatrix (stdout, ph_board, xdim, ydim);
 #endif /* DEBUG_BINARY_BOARD */
   assert (mass == count1 + 2 * count2 + 3 * count3); /* since terminated */
   assert (area == count0 + count1 + count2 + count3);/* since terminated */
-  assert (xmax == used_radius);
-  assert (ymax == used_radius);
+  assert (xmax - xmin == diam - 1);
+  assert (ymax - ymin == diam - 1);
   assert (xmin + xmax == 0);
   assert (ymin + ymax == 0);
   static int prev_area = -1;
@@ -190,14 +175,14 @@ void display_this_board ( void )
   TRACEIN;
   if (cursing_mode) {
     display_cursing_board ();
+    //FIXME: no display delay in interactive mode
+    if (mass < 200) {
+      usleep(DELAYAFTERDISPLAY);
+    } else {			 /* delays add up in the long run */
+      usleep(DELAYAFTERDISPLAY * 200 / mass); /* decreasing delay */
+    }
   } else {
-    display_the_board(stdout);
-  }
-  //FIXME: no display delay in interactive mode
-  if (mass < 200) {
-    usleep(DELAYAFTERDISPLAY);
-  } else {			 /* delays add up in the long run */
-    usleep(DELAYAFTERDISPLAY * 200 / mass); /* decreasing delay */
+    display_the_board(stdout, false);
   }
   TRACEOUT;
 }
@@ -207,10 +192,7 @@ void init_res_file ( void )
   if (output_file == NULL) {
     cantcontinue("ERROR: %s: output file not opened.\n", __func__);
   }
-  struct utsname unameData;
-  if (uname(&unameData) != 0)
-    cantcontinue ("ERROR: %s: system call to uname() failed\n", __func__);
-  fprintf (output_file, "# SAND v%s running on %s\n", SANDPILE_VERSION, unameData.nodename);
+  fprintf (output_file, "# SAND v%s running on %s\n", SANDPILE_VERSION, machine_uname());
   output_calling_options (output_file, "# Called with: ", " ", "\n");
   fprintf (output_file, "# Started: %s\n", now_str(true));
 }
@@ -218,18 +200,35 @@ void init_res_file ( void )
 void open_res_file ( void )
 {
   TRACEIN;
-  char * buff = alloca(150);
-  if (errno == ENOMEM) cantcontinue("ERROR: %s can't alloc for string buff\n", __func__);
-  assert (buff);
-  if (max_height != DEFAULT_HEIGHT) {
-    sprintf (buff, "stats_tas_sable_n%d.txt", max_height);
+  char * fname = NULL;
+  char * frompart = NULL;
+  if (from_snapshot_mode) {
+    long int mass_sn;
+    get_mass_from_snapshot(snapshot_source_file_arg, &mass_sn);
+    asprintf(&frompart, "from_M%ld", mass_sn);
   } else {
-    sprintf (buff, "stats_tas_sable.txt");
+    asprintf(&frompart, "");
   }
-  output_file = fopen(buff, "w");
-  assert (output_file);//FIXME: not a real check of fopen success
+  if (frompart == NULL)
+    cantcontinue("ERROR: %s: asprintf could not alloc frompart.\n", __func__);
+
+  switch (selected_job) {
+  case TIME_JOB:
+    asprintf (&fname, "stats_sand_v%s_T%sjqa_M%d.txt", SANDPILE_VERSION, frompart, max_height);
+    break;
+  case AREA_JOB:
+    asprintf (&fname, "stats_sand_v%s_A%sjqa_M%d.txt", SANDPILE_VERSION, frompart, max_height);
+    break;
+  }
+  if (fname == NULL)
+    cantcontinue("ERROR: %s: asprintf could not alloc fname.\n", __func__);
+
+  output_file = fopen(fname, "w");
+  if (output_file == NULL)
+    cantcontinue("ERROR: %s: Could not open file %s.\n", __func__, fname);
+
   init_res_file ();
-  TRACEOUTMESS("%s", buff);
+  TRACEOUTMESS("%s", fname);
 }
 
 void close_res_file (bool with_stats)
@@ -238,15 +237,10 @@ void close_res_file (bool with_stats)
   assert (output_file);
 
   if (with_stats) {
-    struct utsname unameData;
-    if (uname(&unameData) != 0) {
-      fprintf (stderr, "ERROR: %s: system call to uname() failed\n", __func__);
-      fail();
-    };
     fprintf (output_file, "# Finished: %s\n", now_str(true));
     display_rusage (output_file);
   }
-  fclose(output_file);
+  if (fclose(output_file) != 0) cantcontinue("ERROR: %s: fclose failed.\n", __func__);
   output_file = NULL;
   TRACEOUT;
 }
@@ -254,11 +248,11 @@ void close_res_file (bool with_stats)
 void config_for_underground ( void )
 {
   if (output_file == NULL) {
-    cantcontinue("Can't run underground: output file == NULL\n");
+    cantcontinue("Can't run underground: output file == NULL.\n");
   }
   stderr = output_file;
   if (daemon(1,0) != 0) {
-    cantcontinue("daemon(1,0) failed. Can't run underground\n");
+    cantcontinue("daemon(1,0) failed. Can't run underground.\n");
   }
 }
 
@@ -269,7 +263,7 @@ int main (int argc, char *argv[])
 
   set_value_for_height(DEFAULT_HEIGHT); /* default */
   set_value_for_max_dim(DEFAULT_MAX_DIM);    /* default */
-  process_options(argc,argv);
+  process_calling_arguments(argc,argv);
 
 #ifdef TRACE
   if (cursing_mode) {
@@ -291,8 +285,9 @@ int main (int argc, char *argv[])
   init_board (DEFAULT_INIT_DIM);
 
   int i;
-  for (i = 1; i <= max_height; i++) {
-    increase_orig_mass(1);
+  TRACEMESS ("%s: Starting loop i=1..%d: Origin MASS = %d.", __func__, max_height, mass);
+  for (i = mass+1; i <= max_height; i++) {
+    add_grains_on_origin(1);
     goto_normal_form();
   }
 
@@ -304,5 +299,5 @@ int main (int argc, char *argv[])
     wait_in_cursing();
     terminate_cursing();
   }
-  exit (EXIT_SUCCESS);
+  exit (EXIT_SUCCESS);		/* end of program */
 }

@@ -38,3 +38,5 @@
 *.tdo
 *.pdf
 *.txt
+/phs_sand_2_1/*.o
+

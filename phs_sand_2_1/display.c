@@ -12,13 +12,12 @@
 #include <assert.h>
 #endif /* MAKEDEPEND_IGNORE */
 
-#include "trace.h"
 #include "sand.h"
 
 #define FULL_PLANE_MODE 0
 #define HALF_PLANE_MODE 1
 #define QUARTER_PLANE_MODE 2
-static int plane_mode = QUARTER_PLANE_MODE;
+static int plane_mode = FULL_PLANE_MODE;//QUARTER_PLANE_MODE;
 
 static int terminal_max_x = 0;
 static int terminal_max_y = 0;
@@ -67,7 +66,7 @@ void display_cursing_board ( void )
     cantcontinue("Now need more than %d lines on your terminal.\n", terminal_max_y);
   }
   move (BOARDYOFFSET, BOARDXOFFSET);
-  chtype corner = ' ' | COLOR_PAIR(COLPAIR4TEXT) | A_BOLD; /*FIXME: compute once */
+  chtype corner = '+' | COLOR_PAIR(COLPAIR4TEXT) | A_BOLD; /*FIXME: compute once */
   chtype top = '-' | COLOR_PAIR(COLPAIR4TEXT) | A_BOLD;
   chtype bot = top;
   if (plane_mode != FULL_PLANE_MODE) {
@@ -239,10 +238,10 @@ void display_cursing_mass_data ( void )
   switch (selected_job) {
   case TIME_JOB:
   mvprintw (1, 0, "M=%d T=%llu W=%d c0=%d c1=%d c2=%d c3=%d%s",
-	    mass, nbsteps, 1+2*used_radius, count0, count1, count2, count3, "\t\t" /*padding*/); break;
+	    mass, nbsteps, diam, count0, count1, count2, count3, "\t\t" /*padding*/); break;
   case AREA_JOB:
   mvprintw (1, 0, "A=%d M=%d T=%llu W=%d c0=%d c1=%d c2=%d c3=%d%s",
-	    area, mass, nbsteps, 1+2*used_radius, count0, count1, count2, count3, "\t\t" /*padding*/); break;
+	    area, mass, nbsteps, diam, count0, count1, count2, count3, "\t\t" /*padding*/); break;
   }
   refresh();
 }
@@ -266,9 +265,8 @@ char char_for_val (int val)
   } else if (val > 0) {
     res = '?';
   } else {
-    cantcontinue("ERROR: %s: can't handle val=%d\n", __func__, val);
+    cantcontinue("ERROR: %s: can't handle val=%d.\n", __func__, val);
   }
   DEEPTRACEOUTW("%c", res);
   return res;
 }
-
