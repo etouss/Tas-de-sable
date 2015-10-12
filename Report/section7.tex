@@ -1,0 +1,113 @@
+\section{Généralisation à des graphes finis}
+%cela s'adapte à des graphes non-connexes orienté avec arête multiple ??
+%Non connexes ne sert pas car cela reviens à considérer n problèmes connexes.
+On considère ici des graphes connexes non-orientés à arête simple $G=(V,E)$ où $V$ est l'ensemble des noeuds et $E$ l'ensemble des arête. On dit que $v'$ est un voisin de $v$ si $\{v,v'\}\in E$. On note $d(v)$ le degré d'un noeud $v$, c'est-à-dire son nombre de voisins.
+
+\begin{definition}[\bsc{Graphe de sable}]
+Un graphe de sable $T$ est un graphe fini $G=(V,E)$ muni d'une fonction $g:V\ra\mb{N}$ dites nombre de grains de sables et d'une fonction $e:V\ra\mb{N}$ dites fonctions d'écoulement.
+\end{definition}
+
+\begin{definition}[\bsc{Effondrement}]
+On définit une relation binaire noté $\xra{v}$ sur les graphes de sables. $T=((V,E),g,e)$ et $T'=(G',g',e')$ sont en relation $T\xra{v}T'$ si et seulement si $G=G'$, $e=e'$ et de plus $\forall x\in V, g(x)=g'(x)$ sauf dans les cas suivants :
+\begin{itemize}
+\item Si $x=v$ alors $g'(v)=g(v)-d(v)-e(v)$.
+\item Si $x$ est un voisin de $v$ alors $g'(x)=g(x)+1$
+\end{itemize}
+\end{definition}
+
+\begin{rem}
+Cette définition implique $g(v)\geq e(v)+d(v)$.
+\end{rem}
+
+\begin{definition}
+Soit $T=((V,E),g,e)$ un graphe de sable.
+
+On dit que $T$ a une fuite si $\exists v\in V, e(v)>0$.
+
+On appelle le nombre de grain de  $T$ l'entier naturel $\sum_{v\in V} g(v)$, noté $|T|$.
+\end{definition}
+
+On présente ici des lemmes qui découlent de la définition, qui seront utiles plus tard.
+\begin{lem}
+\label{lemmedecroissancegraph}
+Soit $T=(G,g,e)$ et $T'=(G,g',e)$ des graphes de sable tels que $T\xra{v}T'$. Alors $|T|\geq |T'|$. 
+
+De plus $|T|=|T'|$ si et seulement si $e(v) = 0$.
+\end{lem}
+
+\begin{lem}
+\label{lemmeextractiongraph}
+Soit $T=((E,V),g,e)$ et $T'=((E,V),g',e)$ des graphes de sable tels que $T\xra{v}T'$. Soit $V_1 \subseteq V $. \\
+Si $v\in V_1$ alors en notant $E_1 = E \cap (V_1 \times V_1  )$ et en posant pour tout $v\in V_1$, $e_1(v)=e(v) + |\{v\in V \setminus V_1\}|$, $T_1 = ((E_1,V_1),g_{|V_1},e_1)$ et $ T_1'= ((E_1,V_1),g'_{|V_1},e_1) $ on a 
+\begin{equation*} T_1 \xra{v} T_1' \end{equation*}
+\end{lem}
+
+
+\begin{rem}
+On définit d'ailleurs les écoulement de graphe de sable (fini et infini) de manière analogue.
+
+La confluence forte des graphes de sables se montre aussi de même.
+\end{rem}
+
+\begin{lem}
+\label{lemmeecoulementinfini}
+ Soit $T$ un graphe de sable. Si il existe un écoulement infini alors cette écoulement effondre une infinité de fois chaque sommet de $V$.
+\end{lem}
+
+\begin{proof}
+Soit $T$ un graphe de sable qui possède un écoulement infini $T_0\xra{v_0}T_1\xra{v_1} \cdots \xra{v_{k-1}} T_k \xra{v_k} \cdots$\\
+On pose $V'=\{v\in V | \forall n \in \mathbb{N}, \exists k > n \text{ tel que } v = v_k\}$ l'ensemble des sommets qui sont effondrer une infinité de fois dans un écoulement infini.\\
+Si $V'\neq V$, alors on trouve $v\in V\setminus V'$ tel que $v$ appartienne au voisinage d'un sommet $v'$ des sommets de $V$. Or comme $v'$ est effondré un infinité de fois, on trouve une extractrice $\phi$ tel que, pour tout $k, T_k \xra{v'} T_{k+1}$. Ainsi par définition, pour tout $k$, $g_{\phi(k+1)}(v) = g_{\phi(k)}(v) + 1$ or d'après le lemme \ref{lemmedecroissancegraph} $g_{k}(v)\leq|T_0|$.\\
+Absurde.\\
+Donc $V'=V$ et un écoulement infini effondre une infinité de fois chaque sommet de $V$.
+\end{proof}
+
+\begin{theo}
+Soit $T$ un graphe de sable. Si $T$ a une fuite, alors il n'existe pas d'écoulement infini de graphe de sables partant de $T$.
+\end{theo}
+\begin{proof}
+% * <mathieu.huot@voila.fr> 2015-09-28T12:33:03.707Z:
+%
+% 
+%
+La terminaison se démontre de façon similaire, par récurrence sur la taille des graphes. De même on obtient un écoulement cyclique où $|T|$ se conserve (on remarque que si $T$ a une fuite et $T\ra^*T'$ alors $T'$ a une fuite). Ainsi les cases qui ont une fuite ne s'effondre jamais, et on peut extraire un sous-graphe de sable avec un écoulement cyclique. Ce sous-graphe a aussi une fuite car par connexité du graphe on a forcément supprimé un voisin en extrayant un sous-graphe et donc ajouté une fuite, d'où une contradiction.
+\end{proof}
+
+Autre preuve:
+\begin{proof}
+Conséquence direct du lemme précédant.
+\end{proof}
+\section{Généralisation à des graphes infinis}
+%je n'ai jamais manipulé de graphe infini, j'ai mis des conditions pour éviter des graphes bizarres, mais je ne sais pas si elle sont nécessaires, et pas certain qu'elles soient suffisantes.
+On considère ici des graphes $G=(V,E)$ infinis dénombrables, connexes non-orientés à arêtes simples. On suppose que le nombre de voisins est fini pour tout noeud. On suppose que le nombre de grains de sable est fini, c'est-à-dire $\sum_{v\in V} g(v)<\infty$. On suppose de plus que le graphe est sans perte. On souhaite montrer la terminaison. %Par connexe on entend qu'il existe une chemin fini entre chacun de ses noeuds.
+%par définition il me semble qu'un graphe ne possède pas de chemin infini entre 2 noeuds.
+
+\begin{lem}
+\label{fuiteinfini}
+Soit $T_0$ un graphe de sable infini. Supposons un écoulement infini $T_0\xra{v_0}T_1\xra{v_1}\cdots$. Alors $\{v_i|i\in\mb{N}\}$ est infini.
+\end{lem}
+\begin{proof}
+Sinon, on peut extraire le graphe fini des $\{v_i|i\in\mb{N}\}$ en remplaçant les voisins supprimés par des fuites. Chacune de ses composantes connexes a une fuite sinon le graphe de départ a une composante connexe fini et n'est donc pas connexe. Ainsi on est ramené au cas fini.
+\end{proof}
+
+\begin{lem}
+\label{consistancesommets}
+Soit $T$ un graphe de sable infini, soit $u$ et $v$ deux nœuds voisins. Si $g(u)+g(v)>0$ alors pour tout $T'$ tel que $T\ra^* T'$, on a $g(u)+g(v)>0$.
+\end{lem}
+\begin{proof}
+En résonant sur le dernier effondrement qui concerne $u$ ou $v$.
+Soit $u$ est effondré donc $g(v)\geq 1$, soit $v$ est effondré donc $g(u) \geq 1$.
+D'où $g(u) + g(v) \geq 1$.\\
+Si ni $u$, ni $v$ ne sont effondrés alors $g(u) + g(v) > 0$.
+\end{proof}
+
+\begin{theo}
+Il ne peut y avoir d'écoulement infini de graphes de sable infini.
+\end{theo}
+
+\begin{proof}
+Preuve par l'absurde.\\
+Si il existe un écoulement infini $T_0\xra{v_0}T_1\xra{v_1}\cdots$, alors d'après le lemme \ref{fuiteinfini} $\{v_i|i\in \mathbb{N}\}$ est infini. Donc (à développer), il y a un chemin infini dans le graphe qui est composé de sommet effondré par l'écoulement. Or en découpant le chemin par couple de 2 sommets, d'après le lemme \ref{consistancesommets} il y a une infinité de grain de sable, ce qui est absurde.
+\end{proof}
+%pseudo preuve il faut que je la reprenne.
+

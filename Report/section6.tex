@@ -1,0 +1,61 @@
+\section{Preuve[Hugo]}
+
+\begin{lem}
+\label{trainedesable}
+Soit $T$ un tas de sable et $i\in\mb{N}$.
+Si $\exists j,T(i,j)\neq 0$ alors pour tout tas de sable $T'$ tel que $T\rightarrow^*T'$, on a $\exists j,T'(i,j)\neq 0$.
+\end{lem}
+\begin{proof}
+Clair par récurrence sur la longueur de l'écoulement.
+\end{proof}
+
+\begin{lem}
+\label{nonborne}
+Si il existe un écoulement infini $T_0\xr{0}T_1\xr{1} \cdots \xr{k-1} T_k \xr{k} \cdots$, alors $\{i_k|k\in\mb{N}\}$ ou $\{j_k|k\in\mb{N}\}$ est infini.
+\end{lem}
+\begin{proof}
+Sinon on se ramène au cas fini.
+\end{proof}
+
+\begin{theo}
+Il ne peut y avoir d'écoulement infini.
+\end{theo}
+\begin{proof}
+Par l'absurde, si il existe un écoulement infini $T_0\xr{0}T_1\xr{1} \cdots \xr{k-1} T_k \xr{k} \cdots$, quittes à symétriser et/ou transposer, il existe une extraction $\sigma$ telle que $i_{\sigma(k)}\rightarrow\infty$ d'après le lemme \ref{nonborne}. Ainsi pour tout $i$, il existe $u,v\in\mb{N}$ tel que $v\geq i$ et $\exists j,T_u(i,j)\neq 0$, ainsi d'après le lemme \ref{trainedesable} pour tout $n\geq u$, on a $\exists j,T_n(i,j)\neq 0$. Ainsi le nombre de grain de sable est supérieur à $|T_0|$ en considérant que $|T_0|+1$ lignes contiennent au moins un grain de sable à partir d'un certain rang.
+\end{proof}
+
+
+\subsection{Terminaison de la règle d'effondrement dans le cas d'un tas de sable infini a nombre de grains de sable fini [Section 7 alternative][Thomas,Hugo]}
+
+\begin{lem}
+%\label{trainedesable}
+Soit $T$ un tas de sable infini contenant un nombre fini de grains de sable et $i\in\mb{Z}$.
+Si $\exists j,T(i,j)\neq 0$ alors pour tout tas de sable $T'$ tel que $T\rightarrow^*T'$, on a $\exists j,T'(i,j)\neq 0$.
+\end{lem}
+\begin{proof}
+Clair par récurrence sur la longueur de l'écoulement.
+\end{proof}
+
+\begin{theo}
+Soit $T_0$ un tas de sable infini contenant un nombre fini de grains de sable. Il n'existe pas d'écoulement infini à partir de $T_0$.
+\end{theo}
+\begin{proof}
+Par l'absurde, supposons qu'il existe un écoulement infini $E=T_0\xr{0}T_1\xr{1} \cdots \xr{k-1} T_k \xr{k} \cdots$. Considérons les ensembles $I=\{i_k|k\in\mb{N}\}$ et $J=\{j_k|k\in\mb{N}\}$ (les ensembles des coordonnées des cases subissant un effondrement dans E).
+\begin{itemize}
+\item{Si $I$ et $J$ sont finis.\\}
+Alors le nombre de cases distinctes s'effondrant est fini. Dans ce cas, on peut construire $T'$ une sous-matrice finie de $T_0$ contenant tout les grains de sable de $T_0$ et toutes les cases s'effondrant dans $E$ de telle sorte que les 4 cases voisines de celles-ci soient également dans $T'$.
+
+Par construction, la partie de $T_0$ n'étant pas contenue dans $T'$ est constituée uniquement de cases vides (contenant 0 grains de sables) dont le nombre de grains de sable ne variera jamais au cours de E (car aucune d'elle n'est adjacente à une case s'effondrant dans $E$).Par conséquent, on peut étudier indifféremment l'écoulement $E$ où sa restriction à $T'$ : On s'est ramené au cas d'un écoulement infini sur un tas de sable fini.
+
+On a cependant montré dans une section précédente qu'il ne pouvait y avoir d'écoulement infini sur un tas de sable fini. Par conséquent, l'existence de l'écoulement $E$ est absurde.
+\item{Si $I$ ou $J$ est infini\\}
+Quitte à transposer $T_0$, on suppose que $I$ est infini. $I$ contenant l'ensemble des numéros de ligne des cases s'effondrant au cours de $E$, on a : $\forall i\in I,\exists u \in \mb{N}, \exists j \in \mb{Z}, T_u(i,j)\neq 0$. D'après le lemme 7.4, on a, pour tout $v\geq u$, $\exists j, T_v(i,j)\neq 0$. Autrement dit, chacune des lignes de $T_0$ contenant une case s'effondrant dans $E$ contiendra, à une certaine étape de $E$, au moins un grain de sable. Le lemme 7.4 permet d'affirmer que la ligne en question contiendra toujours au moins un grain de sable à toutes les étapes ultérieures de $E$. Comme $I$ est infini, le nombre de lignes contenant au moins un grains de sable 
+%tend vers l'infini
+augmente indéfiniment au cours de $E$.
+. Ce qui contredit la décroissance de la masse de sable 
+lors d'un effondrement
+(lemme \ref{lemmedecroissance}), ce qui est absurde.  
+%ajouter lien vers le lemme
+\end{itemize}
+\end{proof}
+

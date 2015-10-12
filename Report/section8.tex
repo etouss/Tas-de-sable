@@ -1,0 +1,91 @@
+\section{Problème du tas simple}
+
+Dans cette section, nous nous interesserons à un problème simplifié. On se place dans le cas d'une grille carrée infinie, et on place un nombre $t_0$ de grain sur une case, qui sera par convention la case (0,0). On s'interesse alors  à l'écoulement de ce tas de sable simple, et à la surface ainsi crée. 
+
+\textbf{Exemple de tas simple}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+& & & & \\
+\hline
+& & & & \\
+\hline
+& & 20& & \\
+\hline
+& & & & \\
+\hline
+& & & & \\
+\hline
+\end{tabular}
+\quad
+$\xrightarrow{(2,2)}$
+\quad
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+& &1 & & \\
+\hline
+&2 &2 & 2& \\
+\hline
+1& 2& 0& 2&1 \\
+\hline
+& 2& 2&2 & \\
+\hline
+& & 1& & \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Complexité du problème}
+
+On va chercher à montrer le théorème suivant
+
+\begin{theo}
+L'écoulement d'un tas de sable simple avec $t_0$ grain initialement est se fait en un nombre $\Theta(t_0^2)$ d'étapes
+\end{theo}
+
+
+\begin{definition}[\bsc{Domino}]
+Soit T un tas de sable infini. Un \textit{domino} D est une sous matrice de T de taille $ 2\times 2$ tel que le coin inférieur gauche de D soit de coordonées paires. On repère un domino par son coin inférieur gauche, et on note $Td_{(i,j)}$ le Domino dont le coin inférieur gauche est en position $(2*i,2*j)$   .   
+\end{definition}
+
+On peut remarquer que, si il y a un grain de sable dans un domino à un moment donné de l'écoulement, il y en aura toujours. Par conséquent, si on place $t_0$ grain de sable, il ne pourra pas y avoir plus de $t_0$ occupés après effondrement.   
+
+ On appelle \textit{losange} de taille n l'ensemble de domino suivant $\{ Td_{(i,j)} |   |i|+|j|= n \} $. On note cet ensemble $\Delta_n$
+ 
+\begin{lem}
+Lors de l'écoulement d'un tas de sable simple, si un domino appartenant à un losange de taille n contient un grain de sable, alors tous les domino des losanges de taille inférieur à n contiennent un grain de sable au moins.
+\end{lem}
+
+% Il faudrait dévellopper cette preuve, ce qui n'est pas simple
+\begin{proof}
+Cette propriété vient du fait que les cases des dominos de la couronne de taille n sont plus loin de (0,0) que toutes les cases des dominos des couronnes inférieures.  
+\end{proof}
+
+On cherche alors alors le plus petit n tel que que losanges de taille inférieur n contiennent au moins $t_0$ domino, et donc $t_0$ grain. Cela revient a trouver n tel que:
+
+	\[
+    t_0 \leq \sum\limits_{\substack{0 \leq i\leq n\\ }} |\Delta_{i}|
+    \]
+
+	\[
+   t_0 \leq  \frac{n \times (n+1)}{2}+ \frac{n \times (n-1)}{2} 
+	\] 
+    
+    \[
+    t_0 \leq 2 n^2    
+    \]
+
+	\[
+   \sqrt{\frac{t_0}{2}} \leq n
+    \]
+    
+Prenons par exemple $n_0=\lceil \sqrt{\frac{t_0}{2}} \rceil $. Si l'on place $t_0$ grain sur une case de la matrice, les grains resteront compris dans les losanges de taille inférieure ou égale à $n_0$, donc dans une sous-matrice carrée de taille $2 \times n_0$ On peut donc se ramener au cas fini. La valuation (au sens de la partie II), de la matrice extraite initialement vérifie :
+
+	\[
+   v(t)=t_0 \times (\frac{(n_0+1) \times (n_0+3)}{2}+1)
+    \]
+    
+    \[
+    v(t)=\mathrm{O}(t_0^2)
+    \]
+

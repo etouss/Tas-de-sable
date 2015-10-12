@@ -1,0 +1,78 @@
+\documentclass[a4paper, 11pt]{article}
+
+%% USEFUL packages
+\usepackage{mypackages}
+
+%% USEFUL macros
+% \input{mymacros}
+
+
+\title{Problèmes des tas de sables}
+%Titre à modifier probablement
+
+\author{Étienne \bsc{Toussaint}, Thomas \bsc{Dupriez} , Hugo \bsc{Moeneclaey},\\ Mathieu \bsc{Huot}, Florent \bsc{Koechlin}, Rémy \bsc{Garnier}, Emmanuel \bsc{Arrighi}}
+
+\date{\today}
+%####################################################################
+%######################## LOG #################################
+%####################################################################
+%N'hésitez pas à utiliser cet endroit pour signaler les modifications apportées ou des commentaires/questions sur certaines parties du document.
+
+% ~2015-10-04,Etienne:
+% Nouvelle mesure 
+
+% ~2015-10-04,Thomas:
+%	|-@Section6/Proposition6.5/Démonstration: La notation "T^{N}\xrightarrow{(s,s',.,.)}T^{N+1}" n'est pas définie. Par ailleurs, elle veut dire quoi?
+%	|-@Section7: J'ai ajouté une sous-section présentant une version alternative de la section7. Je me suis efforcé de rendre celle-ci plus rigoureuse, notamment dans l'énoncé de ce qu'elle prouve et dans le raisonnement logique. Je dois cependant avouer que l'idée était lumineuse.
+
+% ~2015-09-28,Thomas:
+%	|- Cela peut être intéressant de signer quand on fait un commentaire.
+%	|- @Section1/Lemme1.4: ne faudrait-t-il pas remplacer "i'=i-a" (resp. "j'=j-c") par "i'=i-a+1" (resp. "j'=j-c+1"). En effet, en l'état, si i=a (resp. j=c), on a i'=0 (resp. j'=0). Dans ce cas, l'effondrement en (i',j') n'a pas de sens, c'est bizarre.
+%	|- @Section1/Lemme1.4: "(T(u+a,v+c))_{1<=u<=b-a,1<=v<=d-c}" a été remplacé par (T(u,v))_{a<=u<=b,c<=v<=d} pour plus de clarté. 
+%	|- @Section6/Définition6.2(Sequence): La définition d'une Séquence est très proche de la définition d'un écoulement fini (@Section1(vers la fin)). Possibilité d'harmoniser pour n'avoir qu'une seule définition, commune celle-ci ?
+%	|- @Section8/Remarque8.3: "Cette définition implique g(v)>=e(v)+d(v)". L'idée est-t-elle qu'une case v doit contenir plus de e(v)+d(v) grains pour pouvoir s'effondrer ? Si oui, c'est pas très clair. On pourrait étendre la notion de case EFFONDRABLE de la section 1, puis mettre dans la définition 8.3 que v doit être une case effondrable.
+
+
+%####################################################################
+%######################## Fin LOG #############################
+%####################################################################
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+% \input mail.tex
+
+%\input abstract.tex
+
+\input abstract.tex
+
+\input intro.tex
+
+\input section1.tex
+
+\input section2.tex
+
+\input section3.tex
+
+\input section4.tex
+
+\input section5.tex
+
+\input section6.tex
+
+\input section7.tex
+
+\input section8.tex
+
+\input conclusion.tex
+
+\input appendix.tex
+%
+%
+% %% USEFUL Bibliography
+% \bibliographystyle{plain}
+% \bibliography{dp-mset}
+
+\end{document}

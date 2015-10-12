@@ -1,0 +1,43 @@
+\usepackage[utf8]{inputenc}
+\usepackage[francais]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsthm}%Numérotation des théorèmes
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{tikz}
+
+\newcommand{\mb}[1]{\mathbb{#1}}
+\newcommand{\xr}[1]{\xrightarrow{(i_{#1},j_{#1})}}
+\newcommand{\llb}[0]{\llbracket}
+\newcommand{\rrb}[0]{\rrbracket}
+\newcommand{\ssi}[0]{\Leftrightarrow}
+\newcommand{\ra}[0]{\rightarrow}
+\newcommand{\xra}[1]{\xrightarrow{#1}}
+
+\renewcommand{\geq}{\geqslant}
+\renewcommand{\leq}{\leqslant}
+
+
+\usepackage{color}%Pour pouvoir écrire en couleur
+\usepackage{mathtools}%Pour pouvoir mettre des étiquettes aux flèches
+\usepackage{stmaryrd}%Pour les crochets d'ensembles d'entiers
+
+
+\setlength{\parskip}{0.2cm}
+
+\makeatletter
+\def\revddots
+{\mathinner{\mkern1mu\raise\p@\vbox{\kern7\p@\hbox{.}}\mkern2mu\raise4\p@\hbox{.}\mkern2mu\raise7\p@\hbox{.}\mkern1mu}}
+\makeatother
+\usepackage{amsthm}
+\usepackage[top=3cm, bottom=4cm, left=3cm, right=3cm]{geometry}
+
+\newtheorem{definition}{Définition}[section] %il faut les mettre après amsthm, sinon il y a une erreur de compilation...
+\newtheorem{theo}[definition]{Proposition}
+\newtheorem{lem}[definition]{Lemme}
+\newtheorem{coro}[definition]{Corollaire}
+\newtheorem{rem}[definition]{Remarque}
+

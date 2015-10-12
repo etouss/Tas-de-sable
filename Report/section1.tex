@@ -1,0 +1,91 @@
+\section{Présentation d'un modèle tas de sable}
+Cette section va poser les notations et les définitions relatives au modèle tas de sable, qui seront utilisées dans le reste de ce document.
+
+%Soit $T$ une matrice de taille $n\times m$ remplie d'entiers naturels ($T(i,j)$ désignant l'entier dans la ligne i et la colonne j de $T$). Informellement, $T$ représente un tas de sable, séparé en $n*m$ piles contenant chacune un certain nombre de grains de sable.
+
+\begin{definition}[\bsc{Tas de sable fini}]
+
+Un tas de sable fini est une matrice dont tous les coefficients sont des entiers naturels.
+Dans le reste du document, T(i,j) représentera le nombre de grains de sable de la case de coordonnée (i,j) ;
+m, resp. n  représentera le nombre de lignes, resp. colonnes de la matrice.\\
+On notera $|T|= \sum\limits_{\substack{1 \leq i\leq m\\ 1 \leq j\leq n}} T(i,j)$ le nombre total de grains de sable de T.
+\end{definition}
+
+Informellement, les cases d'un tas de sable représentent des piles de grains de sable.
+On définit ensuite une opération transformant un tas de sable en un autre : l'effondrement.
+
+\begin{definition}[\bsc{Effondrement}]
+
+On note $T\xrightarrow{(i,j)}T'$ si l'effondrement de la case de coordonnées $(i,j)$ transforme le tas de sable $T$ en le tas de sable $T'$. C'est-à-dire si $\forall u\in\llbracket 1,m\rrbracket, \forall v\in \llbracket 1,n\rrbracket ,T(u,v)=T'(u,v)$ sauf dans les cas suivants :
+
+\begin{itemize}
+\item $T'(i,j)=T(i,j)-4$.
+\item Si $i\neq 1$ alors $T'(i-1,j)=T(i-1,j)+1$.
+\item Si $i\neq m$ alors $T'(i+1,j)=T(i+1,j)+1$.
+\item Si $j\neq 1$ alors $T'(i,j-1)=T(i,j-1)+1$.
+\item Si $j\neq n$ alors $T'(i,j+1)=T(i,j+1)+1$.
+\end{itemize}
+\textbf{Restriction} : un effondrement ne peut pas avoir lieu sur une case contenant strictement moins de 4 grains. Ceci assure la positivité des coefficients de la matrice $T'$.
+
+On dira qu'une case $(i,j)$ est \textbf{effondrable} dans $T$ si $T(i,j)\geqslant4$.
+\end{definition}
+
+
+
+\textbf{Exemple d'effondrement:}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+1&4\\
+\hline
+2&\textbf{\textcolor{red}{6}}\\
+\hline
+\end{tabular}
+\quad
+$\xrightarrow{(2,2)}$
+\quad
+\begin{tabular}{|c|c|}
+\hline
+1&5\\
+\hline
+3&2\\
+\hline
+\end{tabular}
+\end{center}
+
+%On s'intéresse maintenant à l'évolution d'un tas de sable subissant de multiples effondrements successifs.
+On présente ici des lemmes qui découlent de la définition, qui seront utiles plus tard.
+\begin{lem}
+\label{lemmedecroissance}
+Soit $T,T'\in\mathcal{M}_{m,n}(\mb{N})$ tels que $T\xrightarrow{(i,j)}T'$. Alors $|T|\geq |T'|$. 
+
+De plus $|T|=|T'|$ si et seulement si $i\neq 1$ et $i\neq m$ et $j\neq 1$ et $j\neq n$.
+\end{lem}
+
+%Je comprends pas du tout le lemme qui suit.
+%Que signifie la notation (T(u+a,v+c))_{1<=u<=b-a,1<=v<=d-c} ?
+%Si i=a (resp j=c), on a i'=0 (resp j'=0). Dans ce cas, l'effondrement en (i',j') n'est pas défini, c'est bizarre
+%-- Thomas
+
+%Pourquoi noter (T(u+a,v+c))_{1<=u<=b-a,1<=v<=d-c} et pas (T(u,v))_{a<=u<=b,c<=v<=d}
+%Ce qui est selon moi plus claire.
+%Je fais la modif vous pouvez reverse si ça dérange des gens
+
+%Pourquoi y-a-t-il toujours (T(u+a,v+c)) après modif ?
+%-- Thomas
+
+\begin{lem}
+\label{lemmeextraction}
+Soit $T,T'\in\mathcal{M}_{m,n}(\mb{N})$ tels que $T\xrightarrow{(i,j)}T'$. Soit $a,b,c,d\in\mb{N}$ tels que $0\leq a<b\leq m$ et $0\leq c<d\leq n$. Si $i\in \llb a,b\rrb$ et $j\in\llb c,d\rrb$ alors en notant $i'=i-a$, $j'=j-c$ on a 
+$$(T(u,v))_{a\leq u\leq b, c\leq v\leq d} \xrightarrow{(i',j')} (T'(u,v))_{a\leq u\leq b, c\leq v\leq d}$$
+\end{lem}
+
+\begin{definition}[\bsc{Écoulement}]
+Un écoulement infini est une suite de tas de sables $(T_k)_{k\in \mb{N}}$ telle que pour tout $l\in\mb{N}$, on a $T_l\xr{l}T_{l+1}$.
+
+Un écoulement fini est une famille de tas de sables $(T_k)_{0\leq k\leq n}$ telle que pour tout $l\in\mb{N}$, avec $l<n$, on a $T_l\xr{l}T_{l+1}$.
+\end{definition}
+
+Les sections suivantes ont pour but de présenter diverses preuves de terminaison de la règle de l'effondrement. C'est-à-dire montrer qu'un tas de sable quelconque ne peut subir qu'un nombre fini d'effondrements avant que plus aucune de ses piles ne puisse s'effondrer (\textit{i.e.} obtenir un tas de sable dont tout les coefficients sont compris entre 0 et 3).
+
+

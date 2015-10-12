@@ -1,0 +1,31 @@
+\section{Une troisième preuve de terminaison (par l'absurde)[Hugo]}
+
+On s'intéresse à la terminaison de ces règles de transformation. Le lemme suivant est clair.
+
+%TODO: Définir plus explicitement la notion de terminaison
+\begin{theo}
+Il n'existe pas d'écoulement infini.
+\end{theo}
+
+\begin{proof}
+On suppose qu'il y a un écoulement infini de matrice de hauteur $m$. Alors il existe une suite de matrices $(T_k)_{k\in\mb{N}}$ et d'indices $((i_k,j_k))_{k\in\mb{N}}$ tels que :
+
+$$T_0\xr{0}T_1\xr{1} \cdots \xr{k-1} T_k \xr{k} \cdots$$
+
+Or il n'y a qu'un nombre fini d'états accessibles depuis $T_0$ car $(|T_i|)_{i\in\mb{N}}$ est décroissante d'après le lemme \ref{lemmedecroissance}, et qu'il y a un nombre fini de case. Ainsi il existe $u$ et $v \in\mb{N}$ tels que $T_u=T_v$. Ainsi quittes à renommer on a :
+$$T_0\xr{0}T_1\xr{1} \cdots \xr{p-1} T_p$$
+ avec $T_p=T_0$. Ainsi on a 
+ 
+ $$ |T_0|\geq|T_1|\geq\ldots\geq|T_p|=|T_0|.$$
+ 
+ Donc on a une suite d'égalité, ainsi d'après le lemme \ref{lemmedecroissance} on sait qu'aucun tas ne s'effondre sur le bord des $T_i$.
+\medbreak
+Ainsi on peut faire une récurrence sur la hauteur de la matrice $m$. Si $m=1$ il est clair que le moindre effondrement fait perdre des grains de sables, il y a contradiction. 
+
+Si c'est vrai pour $m-1$ avec $m\geq 2$, alors on voit que 
+
+$$\hat{T}_0\xr{0}\hat{T}_1\xr{1} \cdots \xr{p-1} \hat{T}_p$$
+où $\hat{T}$ est la matrice $(T(i,j))_{1\leq i <m,1\leq j\leq n}$ est aussi une suite d'effondrements d'après le lemme \ref{lemmeextraction} car aucun tas ne s'effondre sur le bord, ce qui permet de construire une suite infinie d'effondrements de matrices de hauteur $m-1$ ce qui contredit l'hypothèse de récurrence.
+
+\end{proof}
+
