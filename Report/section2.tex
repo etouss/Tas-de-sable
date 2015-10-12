@@ -1,12 +1,12 @@
 \section{Une première preuve de terminaison (par une mesure)[Thomas,Remy]}
 
 %Beaucoup de trucs pas très clairs dans cette partie
-Dans cette section, nous allons montrer la terminaison de la règle de l'effondrement sur les tas de sables finis. Pour cela, nous allons construire une fonction de valuation, qui va associer à chaque tas de sable une valeur entière. On montrera ensuite que cette valeur décroit strictement à chaque effondrement.
-%associer à chaque grain de sable un "poids" entier, qui dépendra de sa position dans la matrice. On veut faire en sorte que le "poids" total du tas de sable diminue strictement à chaque effondrement.
+Dans cette section, nous allons montrer la terminaison de la règle de l'effondrement sur les tas de sables finis. Pour cela, nous allons construire une fonction de valuation, qui va associer à chaque tas de sable une valeur entière. On montrera ensuite que cette valeur décroit strictement à chaque effondrement. 
+%associer à chaque grain de sable un "poids" entier, qui dépendra de sa position dans la matrice. On veut faire en sorte que le "poids" total du tas de sable diminue strictement à chaque effondrement. 
 
 On définit pour $m,n \in \mb{N}$ la fonction $d_{m,n}$ de la manière suivante:
 
-\[ d_{m,n} : \begin{array}{ccc}
+\[ d_{m,n} : \begin{array}{ccc} 
        \mb{N}^2 & \longrightarrow& \mb{N}\\
       (i,j) & \longmapsto &  \min(i,j,m-i+1,n-j+1)
    \end{array}
@@ -15,7 +15,7 @@ On définit pour $m,n \in \mb{N}$ la fonction $d_{m,n}$ de la manière suivante:
 Cette fonction donne, pour la case (i,j) d'une matrice de taille $(m,n)$, la distance de la case au bord le plus proche.
 
 Soit $a$ la fonction définie ainsi :
-\[ a : \begin{array}{ccc}
+\[ a : \begin{array}{ccc} 
        \mb{N} & \longrightarrow& \mb{N}\\
       i & \longmapsto &  \frac{i(i+1)}{2}
    \end{array}
@@ -26,17 +26,17 @@ On notera que $a(i)$ n'est autre que la somme des entiers naturels compris entre
 
 Soit $T \in M_{m,n}(\mb{N})$ un tas de sable. On note $p = min(\lceil m/2 \rceil , \lceil n/2 \rceil)$, égal à la plus grande "distance au bord le plus proche de la matrice" des cases de $T$. Soit $w_{m,n}$ la fonction définie ainsi :
 
-\[ w_{m,n} : \begin{array}{ccc}
+\[ w_{m,n} : \begin{array}{ccc} 
        \mb{N} & \longrightarrow& \mb{N}\\
       d& \longmapsto &  a(p) + 1 - a(p - d) + p
    \end{array}
 \]
 
-%Autre possibilité: enlever le p de w_{m,n}(i,j) et remplacer la valuation par un mot de deux entiers: le nombre total de grains et la valeur de la valuation obtenue avec w_{m,n}(i,j) sans le +p.
+%Autre possibilité: enlever le p de w_{m,n}(i,j) et remplacer la valuation par un mot de deux entiers: le nombre total de grains et la valeur de la valuation obtenue avec w_{m,n}(i,j) sans le +p. 
 
 En composant à gauche cette fonction avec $d_{m,n}$ on associe une valeur à chaque case de $T$ en créant des "couronnes concentriques", et où les valeurs des couronnes vont en croissant au fur et à mesure qu'on s'éloigne des bords. Voici un exemple des valeurs attribuées par $w_{m,n}\circ d_{m,n}$ :
 
-%\[ \begin{cases}
+%\[ \begin{cases} 
  %     w_{m,n} : & \llbracket 1,m \rrbracket \times \llbracket 1,n \rrbracket \rightarrow \mb{N}\\
   %    w_{m,n}(i,j) = & a_{m,n}(p) - a_{m,n}(min(i,j,m-i+1,n-j+1))
    %\end{cases}
@@ -68,7 +68,7 @@ En composant à gauche cette fonction avec $d_{m,n}$ on associe une valeur à ch
 Valeurs de $w_{m,n}\circ d_{m,n}$ sur une matrice de taille $5\times7$
 \end{center}
 \begin{rem}
-Pour tous $m,n \in \mb{N}^2$, $w_{m,n}$ est strictement positive et strictement croissante sur l'ensemble des valeurs qui nous intéresse, c'est à dire l'intervalle $\llbracket 1,p \rrbracket$.
+Pour tous $m,n \in \mb{N}^2$, $w_{m,n}$ est strictement positive et strictement croissante sur l'ensemble des valeurs qui nous intéresse, c'est-à-dire l'intervalle $\llbracket 1,p \rrbracket$.
 \end{rem}
 
 On peut maintenant définir la valuation $v$ d'un tas de sable $T$ de taille $m\times n$ par:
@@ -94,9 +94,9 @@ Montrons à présent que cette valuation est strictement décroissante par appli
 Soit $T,T'$ deux tas de sable finis. Si $T\xrightarrow{(i,j)}T'$, alors $v(T)>v(T')$.
 \end{theo}
 
-%TODO: Explique pourquoi ça fait fonctionner la preuve en général
+%TODO: Explique pourquoi ça fait fonctionner la preuve en général 
 \begin{proof}
-On numérote les couronnes selon leur distance par rapport au bords de la matrice. Ainsi, la couronne numéro 1 est la couronne la plus à l'extérieur et contient toutes les cases à distance 1 des bords. Elle entoure la couronne numéro 2, qui entoure la couronne numéro 3 etc...\\
+On numérote les couronnes selon leur distance par rapport au bords de la matrice. Ainsi, la couronne numéro 1 est la couronne la plus à l'extérieur et contient toutes les cases à distance 1 des bords. Elle entoure la couronne numéro 2, qui entoure la couronne numéro 3 etc.\\
 On notera $c$ la case de $T$ subissant l'effondrement et on notera $k$ le numéro de la couronne auquel appartient $c$.\\
 On notera abusivement $w_{m,n}(k)$ pour désigner la valeur donnée par la fonction $w_{m,n}$ aux cases de la couronne $k$.\\
 %<nécessaire?>
@@ -131,7 +131,7 @@ On va procéder par disjonction de cas. On identifiera ainsi les diverse configu
         \hline
         1\\
         \hline
-        \end{tabular}
+        \end{tabular}       
 		\end{center}
         Ici, $c$ est forcément adjacente à 3 bords et à une autre case ayant la même valeur. Cf configuration 2.
 	}
@@ -224,7 +224,7 @@ La case $c$ peut donc être située soit sur la couronne extérieure, soit sur l
             \vdots&\vdots&k+1&...&...&k+1&\vdots&\vdots\\
             \hline
             \vdots&\vdots&\vdots&&&\vdots&\vdots&\vdots\\
-
+ 
             \vdots&\vdots&\vdots&&&\vdots&\vdots&\vdots\\
             \hline
             \vdots&\vdots&k+1&...&...&k+1&\vdots&\vdots\\
@@ -337,7 +337,7 @@ Liste des configurations possibles pour la case $c$ et ses voisines, et calculs 
 		v(T)-v(T') &=& 4\times w_{m,n}(k) - 2\times w_{m,n}(k) \\
         &=& 2\times w_{m,n}(k)\\
         &>& 0
-		\end{eqnarray*}
+		\end{eqnarray*}    
     }
     \item{La case $c$ est adjacente à 1 bords de la matrice, et à 3 cases de la même couronne :
      	%schema?
@@ -345,9 +345,9 @@ Liste des configurations possibles pour la case $c$ et ses voisines, et calculs 
 		v(T)-v(T') &=& 4\times w_{m,n}(k) - 3\times w_{m,n}(k) \\
         &=& w_{m,n}(k)\\
         &>& 0
-		\end{eqnarray*}
+		\end{eqnarray*}      
     }
-    \item{La case $c$ est adjacente à 1 bord, à 2 cases de la couronne extérieure ($k=1$) et à 1 case de la couronne 2 ($=k+1$).
+    \item{La case $c$ est adjacente à 1 bord, à 2 cases de la couronne extérieure ($k=1$) et à 1 case de la couronne 2 ($=k+1$). 
         \begin{eqnarray*}
 		v(T)-v(T') &=& 4\times w_{m,n}(k) - 2\times w_{m,n}(k) - w_{m,n}(k+1)\\
         &=& 2\times w_{m,n}(k) - w_{m,n}(k+1)\\
@@ -357,7 +357,7 @@ Liste des configurations possibles pour la case $c$ et ses voisines, et calculs 
         &=& p + 1 - (p-1) + p\\
         &=& p + 2\\
         &>& 0
-		\end{eqnarray*}
+		\end{eqnarray*}     
     }
     \item{La case $c$ est adjacente à 2 cases de la même couronne (la couronne $k$) et à 2 cases de la couronne $k-1$ :
     %schema?
@@ -367,7 +367,7 @@ Liste des configurations possibles pour la case $c$ et ses voisines, et calculs 
     &=& 2\times(a(p) + 1 - a(p-k) + p) - 2\times(a(p) + 1 - a(p-(k-1)) + p)\\
     &=& -2a(p-k) + 2a(p-(k-1))\\
     &>& 0
-	\end{eqnarray*}
+	\end{eqnarray*}   
     }
     \item{La case $c$ est adjacente à 2 cases de la même couronne (la couronne $k$), à 1 cases de la couronne $k-1$ et à 1 case de la couronne $k+1$ :
     %schema?
@@ -380,7 +380,7 @@ Liste des configurations possibles pour la case $c$ et ses voisines, et calculs 
     &=& p - (k-1) - (p-k)\\
     &=& 1\\
     &>& 0
-	\end{eqnarray*}
+	\end{eqnarray*}   
     }
     \item{La case $c$ est adjacente à 3 cases de la même couronne (la couronne $k$), et à 1 case de la couronne $k-1$ (on notera que p est par définition supérieur ou égal à tout numéro de couronne) :
     %schema?
@@ -392,7 +392,7 @@ Liste des configurations possibles pour la case $c$ et ses voisines, et calculs 
     &=& p-(k-1)\\
     &=& p - k + 1\\
     &>& 0
-	\end{eqnarray*}
+	\end{eqnarray*}   
     }
     \item{La case $c$ est adjacente à 1 case de la même couronne (couronne $k$) et à 3 cases de la couronne $k-1$ :
     %schema?
@@ -402,7 +402,7 @@ Liste des configurations possibles pour la case $c$ et ses voisines, et calculs 
     &=& -3a(p-k) + 3a(p-(k-1))\\
     &=& 3(p-(k-1))\\
     &>& 0
-	\end{eqnarray*}
+	\end{eqnarray*}   
     }
     \item{La case $c$ est adjacente à 4 cases de la couronne $k-1$ :
     \begin{eqnarray*}
@@ -411,7 +411,7 @@ Liste des configurations possibles pour la case $c$ et ses voisines, et calculs 
     &=& -4a(p-k) + 4a(p-(k-1))\\
     &=& 4(p-(k-1))\\
     &>& 0
-	\end{eqnarray*}
+	\end{eqnarray*}       
     }
 \end{enumerate}
 
@@ -423,13 +423,13 @@ Liste des configurations possibles pour la case $c$ et ses voisines, et calculs 
 %Les seuls cases qui vont voir leurs nombre de grain de sable changer au cours de l'effondrement sont les cases adjacentes à $c$ et $c$ elle-même. On omettra donc dans les calculs de $v(T)-v(T')$ qui vont suivre de considérer les autres cases (leurs apport à la valuation de $T$ et à celle de $T'$ étant identique et s'annulant).
 %Considérons toute les positions que la case $c$ est susceptible d'occuper :
 %\begin{itemize}
-%\item $c$ est sur la couronne centrale (celle qui a la valeur par $w_{m,n}$ la plus élevée). Il n'y a que deux configurations possibles pour la couronne centrale. Il s'agit soit d'une ligne verticale (respectivement horizontale) de 3 cases si m
+%\item $c$ est sur la couronne centrale (celle qui a la valeur par $w_{m,n}$ la plus élevée). Il n'y a que deux configurations possibles pour la couronne centrale. Il s'agit soit d'une ligne verticale (respectivement horizontale) de 3 cases si m 
 %\end{itemize}
 
 %L'effondrement de la case (i,j) (notée $c$ dans la suite) ne va modifier le no
 %Étant donné que le nombre de grains de sable ne va pas changer ailleurs dans le tas, concentrons nous sur la case $(i,j)$ (notée $c$) et les cases lui étant adjacentes. On distingue deux cas :
 %\begin{itemize}
-%\item $c$ est adjacente à exactement une case (notée $c_-$) ayant un poids (image par $w_{(m,n)}$) strictement inférieur. Dans ce cas, $c$ est également adjacente à deux autres cases $c_1$ et $c_2$ ayant le poids $w_{(m,n)}(c)$, et la quatrième case (notée $c_+$) a soit un poids strictement supérieur, soit n'existe pas (si $c$ est sur le bord de la matrice). On effectue le calcul de la différence des valuations de $T$ et $T'$ en supposant que $c_+$ existe:
+%\item $c$ est adjacente à exactement une case (notée $c_-$) ayant un poids (image par $w_{(m,n)}$) strictement inférieur. Dans ce cas, $c$ est également adjacente à deux autres cases $c_1$ et $c_2$ ayant le poids $w_{(m,n)}(c)$, et la quatrième case (notée $c_+$) a soit un poids strictement supérieur, soit n'existe pas (si $c$ est sur le bord de la matrice). On effectue le calcul de la différence des valuations de $T$ et $T'$ en supposant que $c_+$ existe: 
 
 %\begin{eqnarray*}
 %v(T)-v(T') &=& 4\times w_{(m,n)}(c) - w_{(m,n)}(c_-) - w_{(m,n)}(c_1) - w_{(m,n)}(c_2) - w_{(m,n)}(c_+)\\
@@ -456,7 +456,7 @@ Liste des configurations possibles pour la case $c$ et ses voisines, et calculs 
 
 %\begin{itemize}
 %\item Si $(i,j) \in {(1,1),(1,n),(m,1),(m,n)}$ : la case s'effondrant est sur l'un des coins du tas de sable, dans ce cas, on a : $v(T)-v(T')= 4*1 - 2*1 = 2 > 0$.
-%\item
+%\item 
 %\end{itemize}
 % Dans la mesure où cette preuve ne concerne qu'un seul effondrement, on peut, pour plus de simplicité, étendre les matrices $T$ et $T'$, ainsi que la fonction $w_{(m,n)}$ à l'ensemble des couples d'entiers naturels, en leur attribuant une valeur de 0 sur les couples hors de leurs domaine de définition précédent.% (par exemple $T(1,n)$) comme ayant une valeur nulle par la fonction $w_{(m,n)}$ (suite de l'exemple : $w_{(m,n)}(1,n)=0$).
 
@@ -470,20 +470,34 @@ La proposition 2.4 permet d'établir la terminaison . En effet, si il existait u
 Cette preuve nous donne également une borne sur le nombre d'effondrement nécessaire pour arriver à un tas de sable non effondrable.
 
 \begin{theo}
-Soit $T$ un tas de sable fini de taille $m \times n ( m > n )$ et dont les coefficients sont bornés par $t_0$. La taille d'un écoulement partant de T sera en $\mathrm{O} ( t_0 \times m^3 \times )$
+Soit $T$ un tas de sable fini de taille $m \times n ( m > n )$ et dont les coefficients sont bornés par $t_0$. La taille d'un écoulement partant de $T$ sera en $\mathrm{O} ( t_0 \times m^3 \times n)$ 
 \end{theo}
 
 \begin{proof}
 
-La valuation de la matrice T vérifie:
+La valuation de la matrice $T$ vérifie initialement: 
 
 	\[
     v(T) =  \sum\limits_{\substack{1 \leq i\leq m\\ 1 \leq j\leq n}} w_{m,n}\circ d_{m,n}(i,j)\times T(i,j)
 	\]
-
+    
     \[
     v(T) < t_0 \times \sum\limits_{\substack{1 \leq i\leq m\\ 1 \leq j\leq n}} w_{m,n}(\lceil m/2 \rceil)
     \]
+      \[
+    v(T) < t_0 \times m \times n \times (a(\lceil m/2 \rceil)+1-a(0)+\lceil m/2 \rceil)
+    \]
+
+      \[
+    v(T) < t_0 \times m \times n \times ((m+1)*(m+2)/2+1+(m+1)/2 )
+    \]
+    
+         \[
+    v(T) < t_0 \times ( (m+2)^3 \times n  +1+(m+1)\times m \times n )
+    \]
+    
+La valuation de la matrice étant strictement décroissante chaque effondrement, le nombre d'effondrement est majoré par v(T), ce qui termine la preuve.
 
 \end{proof}
+
 

@@ -46,23 +46,27 @@
 \title{Problèmes des tas de sables}
 %Titre à modifier probablement
 
-\author{Étienne \bsc{Toussaint}, Thomas \bsc{Dupriez} , Rémy \bsc{Garnier},\\ Mathieu \bsc{Huot}, Florent \bsc{Koechlin}, Hugo \bsc{Moeneclaey}}
+\author{Étienne \bsc{Toussaint}, Thomas \bsc{Dupriez} , Hugo \bsc{Moeneclaey},\\ Mathieu \bsc{Huot}, Florent \bsc{Koechlin}, Rémy \bsc{Garnier}, Emmanuel \bsc{Arrighi}}
 
 \date{\today}
 %####################################################################
 %######################## LOG #################################
 %####################################################################
-%N'hésitez pas à utiliser cet endroit pour signaler les modifications apportées ou de commentaires/questions sur certaines parties du document.
+%N'hésitez pas à utiliser cet endroit pour signaler les modifications apportées ou des commentaires/questions sur certaines parties du document.
+
+% ~2015-10-04,Etienne:
+% Nouvelle mesure 
+
+% ~2015-10-04,Thomas:
+%	|-@Section6/Proposition6.5/Démonstration: La notation "T^{N}\xrightarrow{(s,s',.,.)}T^{N+1}" n'est pas définie. Par ailleurs, elle veut dire quoi?
+%	|-@Section7: J'ai ajouté une sous-section présentant une version alternative de la section7. Je me suis efforcé de rendre celle-ci plus rigoureuse, notamment dans l'énoncé de ce qu'elle prouve et dans le raisonnement logique. Je dois cependant avouer que l'idée était lumineuse.
 
 % ~2015-09-28,Thomas:
 %	|- Cela peut être intéressant de signer quand on fait un commentaire.
 %	|- @Section1/Lemme1.4: ne faudrait-t-il pas remplacer "i'=i-a" (resp. "j'=j-c") par "i'=i-a+1" (resp. "j'=j-c+1"). En effet, en l'état, si i=a (resp. j=c), on a i'=0 (resp. j'=0). Dans ce cas, l'effondrement en (i',j') n'a pas de sens, c'est bizarre.
-%	|- @Section1/Lemme1.4: "(T(u+a,v+c))_{1<=u<=b-a,1<=v<=d-c}" a été remplacé par (T(u,v))_{a<=u<=b,c<=v<=d} pour plus de clarté.
+%	|- @Section1/Lemme1.4: "(T(u+a,v+c))_{1<=u<=b-a,1<=v<=d-c}" a été remplacé par (T(u,v))_{a<=u<=b,c<=v<=d} pour plus de clarté. 
 %	|- @Section6/Définition6.2(Sequence): La définition d'une Séquence est très proche de la définition d'un écoulement fini (@Section1(vers la fin)). Possibilité d'harmoniser pour n'avoir qu'une seule définition, commune celle-ci ?
 %	|- @Section8/Remarque8.3: "Cette définition implique g(v)>=e(v)+d(v)". L'idée est-t-elle qu'une case v doit contenir plus de e(v)+d(v) grains pour pouvoir s'effondrer ? Si oui, c'est pas très clair. On pourrait étendre la notion de case EFFONDRABLE de la section 1, puis mettre dans la définition 8.3 que v doit être une case effondrable.
-
-
-
 
 
 %####################################################################
@@ -71,6 +75,8 @@
 
 \begin{document}
 \maketitle
+\tableofcontents
+\newpage
 
 \begin{abstract}
 Nous présentons dans ce document un nouveau type de modèle : les tas de sable.
@@ -137,10 +143,10 @@ $\xrightarrow{(2,2)}$
 \end{center}
 
 %On s'intéresse maintenant à l'évolution d'un tas de sable subissant de multiples effondrements successifs.
-On présente ici des lemmes qui découle de la définition, qui seront utile plus tard.
+On présente ici des lemmes qui découlent de la définition, qui seront utiles plus tard.
 \begin{lem}
 \label{lemmedecroissance}
-Soit $T,T'\in\mathcal{M}_{m,n}(\mb{N})$ tels que $T\xrightarrow{(i,j)}T'$. Alors $|T|\geq |T'|$.
+Soit $T,T'\in\mathcal{M}_{m,n}(\mb{N})$ tels que $T\xrightarrow{(i,j)}T'$. Alors $|T|\geq |T'|$. 
 
 De plus $|T|=|T'|$ si et seulement si $i\neq 1$ et $i\neq m$ et $j\neq 1$ et $j\neq n$.
 \end{lem}
@@ -159,7 +165,7 @@ De plus $|T|=|T'|$ si et seulement si $i\neq 1$ et $i\neq m$ et $j\neq 1$ et $j\
 
 \begin{lem}
 \label{lemmeextraction}
-Soit $T,T'\in\mathcal{M}_{m,n}(\mb{N})$ tels que $T\xrightarrow{(i,j)}T'$. Soit $a,b,c,d\in\mb{N}$ tels que $0\leq a<b\leq m$ et $0\leq c<d\leq n$. Si $i\in \llb a,b\rrb$ et $j\in\llb c,d\rrb$ alors en notant $i'=i-a$, $j'=j-c$ on a
+Soit $T,T'\in\mathcal{M}_{m,n}(\mb{N})$ tels que $T\xrightarrow{(i,j)}T'$. Soit $a,b,c,d\in\mb{N}$ tels que $0\leq a<b\leq m$ et $0\leq c<d\leq n$. Si $i\in \llb a,b\rrb$ et $j\in\llb c,d\rrb$ alors en notant $i'=i-a$, $j'=j-c$ on a 
 $$(T(u,v))_{a\leq u\leq b, c\leq v\leq d} \xrightarrow{(i',j')} (T'(u,v))_{a\leq u\leq b, c\leq v\leq d}$$
 \end{lem}
 
@@ -174,12 +180,12 @@ Les sections suivantes ont pour but de présenter diverses preuves de terminaiso
 \section{Une première preuve de terminaison (par une mesure)[Thomas,Remy]}
 
 %Beaucoup de trucs pas très clairs dans cette partie
-Dans cette section, nous allons montrer la terminaison de la règle de l'effondrement sur les tas de sables finis. Pour cela, nous allons construire une fonction de valuation, qui va associer à chaque tas de sable une valeur entière. On montrera ensuite que cette valeur décroit strictement à chaque effondrement.
-%associer à chaque grain de sable un "poids" entier, qui dépendra de sa position dans la matrice. On veut faire en sorte que le "poids" total du tas de sable diminue strictement à chaque effondrement.
+Dans cette section, nous allons montrer la terminaison de la règle de l'effondrement sur les tas de sables finis. Pour cela, nous allons construire une fonction de valuation, qui va associer à chaque tas de sable une valeur entière. On montrera ensuite que cette valeur décroit strictement à chaque effondrement. 
+%associer à chaque grain de sable un "poids" entier, qui dépendra de sa position dans la matrice. On veut faire en sorte que le "poids" total du tas de sable diminue strictement à chaque effondrement. 
 
 On définit pour $m,n \in \mb{N}$ la fonction $d_{m,n}$ de la manière suivante:
 
-\[ d_{m,n} : \begin{array}{ccc}
+\[ d_{m,n} : \begin{array}{ccc} 
        \mb{N}^2 & \longrightarrow& \mb{N}\\
       (i,j) & \longmapsto &  \min(i,j,m-i+1,n-j+1)
    \end{array}
@@ -188,7 +194,7 @@ On définit pour $m,n \in \mb{N}$ la fonction $d_{m,n}$ de la manière suivante:
 Cette fonction donne, pour la case (i,j) d'une matrice de taille $(m,n)$, la distance de la case au bord le plus proche.
 
 Soit $a$ la fonction définie ainsi :
-\[ a : \begin{array}{ccc}
+\[ a : \begin{array}{ccc} 
        \mb{N} & \longrightarrow& \mb{N}\\
       i & \longmapsto &  \frac{i(i+1)}{2}
    \end{array}
@@ -199,17 +205,17 @@ On notera que $a(i)$ n'est autre que la somme des entiers naturels compris entre
 
 Soit $T \in M_{m,n}(\mb{N})$ un tas de sable. On note $p = min(\lceil m/2 \rceil , \lceil n/2 \rceil)$, égal à la plus grande "distance au bord le plus proche de la matrice" des cases de $T$. Soit $w_{m,n}$ la fonction définie ainsi :
 
-\[ w_{m,n} : \begin{array}{ccc}
+\[ w_{m,n} : \begin{array}{ccc} 
        \mb{N} & \longrightarrow& \mb{N}\\
       d& \longmapsto &  a(p) + 1 - a(p - d) + p
    \end{array}
 \]
 
-%Autre possibilité: enlever le p de w_{m,n}(i,j) et remplacer la valuation par un mot de deux entiers: le nombre total de grains et la valeur de la valuation obtenue avec w_{m,n}(i,j) sans le +p.
+%Autre possibilité: enlever le p de w_{m,n}(i,j) et remplacer la valuation par un mot de deux entiers: le nombre total de grains et la valeur de la valuation obtenue avec w_{m,n}(i,j) sans le +p. 
 
 En composant à gauche cette fonction avec $d_{m,n}$ on associe une valeur à chaque case de $T$ en créant des "couronnes concentriques", et où les valeurs des couronnes vont en croissant au fur et à mesure qu'on s'éloigne des bords. Voici un exemple des valeurs attribuées par $w_{m,n}\circ d_{m,n}$ :
 
-%\[ \begin{cases}
+%\[ \begin{cases} 
  %     w_{m,n} : & \llbracket 1,m \rrbracket \times \llbracket 1,n \rrbracket \rightarrow \mb{N}\\
   %    w_{m,n}(i,j) = & a_{m,n}(p) - a_{m,n}(min(i,j,m-i+1,n-j+1))
    %\end{cases}
@@ -241,7 +247,7 @@ En composant à gauche cette fonction avec $d_{m,n}$ on associe une valeur à ch
 Valeurs de $w_{m,n}\circ d_{m,n}$ sur une matrice de taille $5\times7$
 \end{center}
 \begin{rem}
-Pour tous $m,n \in \mb{N}^2$, $w_{m,n}$ est strictement positive et strictement croissante sur l'ensemble des valeurs qui nous intéresse, c'est à dire l'intervalle $\llbracket 1,p \rrbracket$.
+Pour tous $m,n \in \mb{N}^2$, $w_{m,n}$ est strictement positive et strictement croissante sur l'ensemble des valeurs qui nous intéresse, c'est-à-dire l'intervalle $\llbracket 1,p \rrbracket$.
 \end{rem}
 
 On peut maintenant définir la valuation $v$ d'un tas de sable $T$ de taille $m\times n$ par:
@@ -267,9 +273,9 @@ Montrons à présent que cette valuation est strictement décroissante par appli
 Soit $T,T'$ deux tas de sable finis. Si $T\xrightarrow{(i,j)}T'$, alors $v(T)>v(T')$.
 \end{theo}
 
-%TODO: Explique pourquoi ça fait fonctionner la preuve en général
+%TODO: Explique pourquoi ça fait fonctionner la preuve en général 
 \begin{proof}
-On numérote les couronnes selon leur distance par rapport au bords de la matrice. Ainsi, la couronne numéro 1 est la couronne la plus à l'extérieur et contient toutes les cases à distance 1 des bords. Elle entoure la couronne numéro 2, qui entoure la couronne numéro 3 etc...\\
+On numérote les couronnes selon leur distance par rapport au bords de la matrice. Ainsi, la couronne numéro 1 est la couronne la plus à l'extérieur et contient toutes les cases à distance 1 des bords. Elle entoure la couronne numéro 2, qui entoure la couronne numéro 3 etc.\\
 On notera $c$ la case de $T$ subissant l'effondrement et on notera $k$ le numéro de la couronne auquel appartient $c$.\\
 On notera abusivement $w_{m,n}(k)$ pour désigner la valeur donnée par la fonction $w_{m,n}$ aux cases de la couronne $k$.\\
 %<nécessaire?>
@@ -304,7 +310,7 @@ On va procéder par disjonction de cas. On identifiera ainsi les diverse configu
         \hline
         1\\
         \hline
-        \end{tabular}
+        \end{tabular}       
 		\end{center}
         Ici, $c$ est forcément adjacente à 3 bords et à une autre case ayant la même valeur. Cf configuration 2.
 	}
@@ -397,7 +403,7 @@ La case $c$ peut donc être située soit sur la couronne extérieure, soit sur l
             \vdots&\vdots&k+1&...&...&k+1&\vdots&\vdots\\
             \hline
             \vdots&\vdots&\vdots&&&\vdots&\vdots&\vdots\\
-
+ 
             \vdots&\vdots&\vdots&&&\vdots&\vdots&\vdots\\
             \hline
             \vdots&\vdots&k+1&...&...&k+1&\vdots&\vdots\\
@@ -510,7 +516,7 @@ Liste des configurations possibles pour la case $c$ et ses voisines, et calculs 
 		v(T)-v(T') &=& 4\times w_{m,n}(k) - 2\times w_{m,n}(k) \\
         &=& 2\times w_{m,n}(k)\\
         &>& 0
-		\end{eqnarray*}
+		\end{eqnarray*}    
     }
     \item{La case $c$ est adjacente à 1 bords de la matrice, et à 3 cases de la même couronne :
      	%schema?
@@ -518,9 +524,9 @@ Liste des configurations possibles pour la case $c$ et ses voisines, et calculs 
 		v(T)-v(T') &=& 4\times w_{m,n}(k) - 3\times w_{m,n}(k) \\
         &=& w_{m,n}(k)\\
         &>& 0
-		\end{eqnarray*}
+		\end{eqnarray*}      
     }
-    \item{La case $c$ est adjacente à 1 bord, à 2 cases de la couronne extérieure ($k=1$) et à 1 case de la couronne 2 ($=k+1$).
+    \item{La case $c$ est adjacente à 1 bord, à 2 cases de la couronne extérieure ($k=1$) et à 1 case de la couronne 2 ($=k+1$). 
         \begin{eqnarray*}
 		v(T)-v(T') &=& 4\times w_{m,n}(k) - 2\times w_{m,n}(k) - w_{m,n}(k+1)\\
         &=& 2\times w_{m,n}(k) - w_{m,n}(k+1)\\
@@ -530,7 +536,7 @@ Liste des configurations possibles pour la case $c$ et ses voisines, et calculs 
         &=& p + 1 - (p-1) + p\\
         &=& p + 2\\
         &>& 0
-		\end{eqnarray*}
+		\end{eqnarray*}     
     }
     \item{La case $c$ est adjacente à 2 cases de la même couronne (la couronne $k$) et à 2 cases de la couronne $k-1$ :
     %schema?
@@ -540,7 +546,7 @@ Liste des configurations possibles pour la case $c$ et ses voisines, et calculs 
     &=& 2\times(a(p) + 1 - a(p-k) + p) - 2\times(a(p) + 1 - a(p-(k-1)) + p)\\
     &=& -2a(p-k) + 2a(p-(k-1))\\
     &>& 0
-	\end{eqnarray*}
+	\end{eqnarray*}   
     }
     \item{La case $c$ est adjacente à 2 cases de la même couronne (la couronne $k$), à 1 cases de la couronne $k-1$ et à 1 case de la couronne $k+1$ :
     %schema?
@@ -553,7 +559,7 @@ Liste des configurations possibles pour la case $c$ et ses voisines, et calculs 
     &=& p - (k-1) - (p-k)\\
     &=& 1\\
     &>& 0
-	\end{eqnarray*}
+	\end{eqnarray*}   
     }
     \item{La case $c$ est adjacente à 3 cases de la même couronne (la couronne $k$), et à 1 case de la couronne $k-1$ (on notera que p est par définition supérieur ou égal à tout numéro de couronne) :
     %schema?
@@ -565,7 +571,7 @@ Liste des configurations possibles pour la case $c$ et ses voisines, et calculs 
     &=& p-(k-1)\\
     &=& p - k + 1\\
     &>& 0
-	\end{eqnarray*}
+	\end{eqnarray*}   
     }
     \item{La case $c$ est adjacente à 1 case de la même couronne (couronne $k$) et à 3 cases de la couronne $k-1$ :
     %schema?
@@ -575,7 +581,7 @@ Liste des configurations possibles pour la case $c$ et ses voisines, et calculs 
     &=& -3a(p-k) + 3a(p-(k-1))\\
     &=& 3(p-(k-1))\\
     &>& 0
-	\end{eqnarray*}
+	\end{eqnarray*}   
     }
     \item{La case $c$ est adjacente à 4 cases de la couronne $k-1$ :
     \begin{eqnarray*}
@@ -584,7 +590,7 @@ Liste des configurations possibles pour la case $c$ et ses voisines, et calculs 
     &=& -4a(p-k) + 4a(p-(k-1))\\
     &=& 4(p-(k-1))\\
     &>& 0
-	\end{eqnarray*}
+	\end{eqnarray*}       
     }
 \end{enumerate}
 
@@ -596,13 +602,13 @@ Liste des configurations possibles pour la case $c$ et ses voisines, et calculs 
 %Les seuls cases qui vont voir leurs nombre de grain de sable changer au cours de l'effondrement sont les cases adjacentes à $c$ et $c$ elle-même. On omettra donc dans les calculs de $v(T)-v(T')$ qui vont suivre de considérer les autres cases (leurs apport à la valuation de $T$ et à celle de $T'$ étant identique et s'annulant).
 %Considérons toute les positions que la case $c$ est susceptible d'occuper :
 %\begin{itemize}
-%\item $c$ est sur la couronne centrale (celle qui a la valeur par $w_{m,n}$ la plus élevée). Il n'y a que deux configurations possibles pour la couronne centrale. Il s'agit soit d'une ligne verticale (respectivement horizontale) de 3 cases si m
+%\item $c$ est sur la couronne centrale (celle qui a la valeur par $w_{m,n}$ la plus élevée). Il n'y a que deux configurations possibles pour la couronne centrale. Il s'agit soit d'une ligne verticale (respectivement horizontale) de 3 cases si m 
 %\end{itemize}
 
 %L'effondrement de la case (i,j) (notée $c$ dans la suite) ne va modifier le no
 %Étant donné que le nombre de grains de sable ne va pas changer ailleurs dans le tas, concentrons nous sur la case $(i,j)$ (notée $c$) et les cases lui étant adjacentes. On distingue deux cas :
 %\begin{itemize}
-%\item $c$ est adjacente à exactement une case (notée $c_-$) ayant un poids (image par $w_{(m,n)}$) strictement inférieur. Dans ce cas, $c$ est également adjacente à deux autres cases $c_1$ et $c_2$ ayant le poids $w_{(m,n)}(c)$, et la quatrième case (notée $c_+$) a soit un poids strictement supérieur, soit n'existe pas (si $c$ est sur le bord de la matrice). On effectue le calcul de la différence des valuations de $T$ et $T'$ en supposant que $c_+$ existe:
+%\item $c$ est adjacente à exactement une case (notée $c_-$) ayant un poids (image par $w_{(m,n)}$) strictement inférieur. Dans ce cas, $c$ est également adjacente à deux autres cases $c_1$ et $c_2$ ayant le poids $w_{(m,n)}(c)$, et la quatrième case (notée $c_+$) a soit un poids strictement supérieur, soit n'existe pas (si $c$ est sur le bord de la matrice). On effectue le calcul de la différence des valuations de $T$ et $T'$ en supposant que $c_+$ existe: 
 
 %\begin{eqnarray*}
 %v(T)-v(T') &=& 4\times w_{(m,n)}(c) - w_{(m,n)}(c_-) - w_{(m,n)}(c_1) - w_{(m,n)}(c_2) - w_{(m,n)}(c_+)\\
@@ -629,7 +635,7 @@ Liste des configurations possibles pour la case $c$ et ses voisines, et calculs 
 
 %\begin{itemize}
 %\item Si $(i,j) \in {(1,1),(1,n),(m,1),(m,n)}$ : la case s'effondrant est sur l'un des coins du tas de sable, dans ce cas, on a : $v(T)-v(T')= 4*1 - 2*1 = 2 > 0$.
-%\item
+%\item 
 %\end{itemize}
 % Dans la mesure où cette preuve ne concerne qu'un seul effondrement, on peut, pour plus de simplicité, étendre les matrices $T$ et $T'$, ainsi que la fonction $w_{(m,n)}$ à l'ensemble des couples d'entiers naturels, en leur attribuant une valeur de 0 sur les couples hors de leurs domaine de définition précédent.% (par exemple $T(1,n)$) comme ayant une valeur nulle par la fonction $w_{(m,n)}$ (suite de l'exemple : $w_{(m,n)}(1,n)=0$).
 
@@ -643,34 +649,49 @@ La proposition 2.4 permet d'établir la terminaison . En effet, si il existait u
 Cette preuve nous donne également une borne sur le nombre d'effondrement nécessaire pour arriver à un tas de sable non effondrable.
 
 \begin{theo}
-Soit $T$ un tas de sable fini de taille $m \times n ( m > n )$ et dont les coefficients sont bornés par $t_0$. La taille d'un écoulement partant de T sera en $\mathrm{O} ( t_0 \times m^3 \times )$
+Soit $T$ un tas de sable fini de taille $m \times n ( m > n )$ et dont les coefficients sont bornés par $t_0$. La taille d'un écoulement partant de $T$ sera en $\mathrm{O} ( t_0 \times m^3 \times n)$ 
 \end{theo}
 
 \begin{proof}
 
-La valuation de la matrice T vérifie:
+La valuation de la matrice $T$ vérifie initialement: 
 
 	\[
     v(T) =  \sum\limits_{\substack{1 \leq i\leq m\\ 1 \leq j\leq n}} w_{m,n}\circ d_{m,n}(i,j)\times T(i,j)
 	\]
-
+    
     \[
     v(T) < t_0 \times \sum\limits_{\substack{1 \leq i\leq m\\ 1 \leq j\leq n}} w_{m,n}(\lceil m/2 \rceil)
     \]
+      \[
+    v(T) < t_0 \times m \times n \times (a(\lceil m/2 \rceil)+1-a(0)+\lceil m/2 \rceil)
+    \]
+
+      \[
+    v(T) < t_0 \times m \times n \times ((m+1)*(m+2)/2+1+(m+1)/2 )
+    \]
+    
+         \[
+    v(T) < t_0 \times ( (m+2)^3 \times n  +1+(m+1)\times m \times n )
+    \]
+    
+La valuation de la matrice étant strictement décroissante chaque effondrement, le nombre d'effondrement est majoré par v(T), ce qui termine la preuve.
 
 \end{proof}
 
 
 
+%j'ai du raté quelques part c'est pas cohérant par rapport au resultat des graph.
+% les graph apparaisent quadratique j'apparait linéaire par rapport au nombre initial des truc. 
+
 \section{Une deuxième preuve de terminaison (par une mesure euclidienne)[Mathieu,Etienne]}
 
-Dans cette section on définit une fonction sur les Tas dans $\mb{N}$ qui va strictement decroitre par effondrement.
-\\$\lambda(T) = 2(m^2+n^2)|T'| - \sum_{i\leq m,j\leq n} (i^2 + (m-i)^2 + j^2 + (n-j)^2)*T(i,j)$
-Clairement $\lambda$ est à valeurs dans $\mb{N}$.
-Soit $T,T'$ tel que $T\xrightarrow{i,j}T'$ un effondrement sans perte,  montrons que $\lambda(T')<\lambda(T)$.
+Soit $n,m\in\mathbb{N}$. On note $M_{n,m}(T)$ l'ensemble des tas de taille $n\times m$. On définit $\lambda : M_{n,m}(T) \rightarrow \mathbb{N}$ la fonction qui à un tas $T$ associe 
+$\lambda(T) = 2(m^2+n^2)|T| - \sum_{i\leq m,j\leq n} (i^2 + (m-i)^2 + j^2 + (n-j)^2)T(i,j)$. Remarquons que $\lambda$ est bien définie. \\
+\indent Soit $T,T'$ deux tas tels que $T\xrightarrow{i,j}T'$ soit un effondrement sans perte. Montrons que $\lambda(T')<\lambda(T)$.
 \begin{eqnarray*}
-\lambda(T') & = & 2(m^2+n^2)|T'| - \sum_{i\leq m,j\leq n}(i^2 + (m-i)^2 + j^2 + (n-j)^2)*T'(i,j) \\
-& & \mbox{as $|T| = |T'|$ :} \\
+\lambda(T') & = & 2(m^2+n^2)|T| - \sum_{i\leq m,j\leq n}(i^2 + (m-i)^2 + j^2 + (n-j)^2)*T'(i,j) \\
+& & \mbox{comme $|T| = |T'|$ :} \\
 \lambda(T') & = & \lambda(T) + 4(i^2 + (m-i)^2 + j^2 + (n-j)^2) \\
 & & - (((i+1)^2 + (m-(i+1))^2 + j^2 + (n-j)^2)) \\
 & & - (((i-1)^2 + (m-(i-1))^2 + j^2 + (n-j)^2)) \\
@@ -684,8 +705,8 @@ Soit $T,T'$ tel que $T\xrightarrow{i,j}T'$ un effondrement sans perte,  montrons
 \lambda(T') & = & \lambda(T) - 8 \\
 \end{eqnarray*}
 
-Soit $T,T'$ tel que $T\xrightarrow{i,j}T'$ un effondrement avec perte.
-Alors $|T'|<|T|$ Supposons $\lambda(T') - \lambda(T) \geq 0$
+Soit $T,T'$ deux tas tels que $T\xrightarrow{i,j}T'$ soit un effondrement avec perte.
+Supposons par l'absurde que $\lambda(T') - \lambda(T) \geq 0$.
 \begin{eqnarray*}
   0 & \leq & \lambda(T') - \lambda(T) \\
   2(m^2+n^2)(|T|-|T'|) & \leq & \sum_{i\leq m,j\leq n} (i^2 + (m-i)^2 + j^2 + (n-j)^2)*T(i,j) \\
@@ -713,7 +734,7 @@ Notons $E'(i,j) = \left\{\begin{array}{ll}
 \end{eqnarray*}
 
 Or $\sum E'(x,y) = |T|-|T'|$
-Donc on a juste a montré que : \\
+Donc on a juste à montrer que : \\
 $2(m^2+n^2) < (x^2 + (m-x)^2 + y^2 + (n-y)^2)$ est absurde (Inégalité strict grace au 8).
 \begin{eqnarray*}
   2(m^2+n^2) & < & (x^2 + (m-x)^2 + y^2 + (n-y)^2)\\
@@ -727,7 +748,8 @@ En conclusion $m^2 + n^2 < -2mx -2ny$ est absurde. \\
 Alors $\lambda(T') < \lambda(T)$ \\
 Donc la fonction lambda est décroissante.
 
-% A finir c'est chiant.
+%Chiant a finir j'en ai marre.
+
 
 
 
@@ -750,15 +772,15 @@ $$T_0\xr{0}T_1\xr{1} \cdots \xr{k-1} T_k \xr{k} \cdots$$
 
 Or il n'y a qu'un nombre fini d'états accessibles depuis $T_0$ car $(|T_i|)_{i\in\mb{N}}$ est décroissante d'après le lemme \ref{lemmedecroissance}, et qu'il y a un nombre fini de case. Ainsi il existe $u$ et $v \in\mb{N}$ tels que $T_u=T_v$. Ainsi quittes à renommer on a :
 $$T_0\xr{0}T_1\xr{1} \cdots \xr{p-1} T_p$$
- avec $T_p=T_0$. Ainsi on a
-
+ avec $T_p=T_0$. Ainsi on a 
+ 
  $$ |T_0|\geq|T_1|\geq\ldots\geq|T_p|=|T_0|.$$
-
+ 
  Donc on a une suite d'égalité, ainsi d'après le lemme \ref{lemmedecroissance} on sait qu'aucun tas ne s'effondre sur le bord des $T_i$.
 \medbreak
-Ainsi on peut faire une récurrence sur la hauteur de la matrice $m$. Si $m=1$ il est clair que le moindre effondrement fait perdre des grains de sables, il y a contradiction.
+Ainsi on peut faire une récurrence sur la hauteur de la matrice $m$. Si $m=1$ il est clair que le moindre effondrement fait perdre des grains de sables, il y a contradiction. 
 
-Si c'est vrai pour $m-1$ avec $m\geq 2$, alors on voit que
+Si c'est vrai pour $m-1$ avec $m\geq 2$, alors on voit que 
 
 $$\hat{T}_0\xr{0}\hat{T}_1\xr{1} \cdots \xr{p-1} \hat{T}_p$$
 où $\hat{T}$ est la matrice $(T(i,j))_{1\leq i <m,1\leq j\leq n}$ est aussi une suite d'effondrements d'après le lemme \ref{lemmeextraction} car aucun tas ne s'effondre sur le bord, ce qui permet de construire une suite infinie d'effondrements de matrices de hauteur $m-1$ ce qui contredit l'hypothèse de récurrence.
@@ -767,26 +789,26 @@ où $\hat{T}$ est la matrice $(T(i,j))_{1\leq i <m,1\leq j\leq n}$ est aussi une
 
 \section{Unicité de la grille finale et des cases effondrées [Florent]}
 
-Soit $\rightarrow$ une relation binaire sur un ensemble $E$.
+Soit $\rightarrow$ une relation binaire sur un ensemble $E$. 
 
 Pour $T,T'\in E$, on définit $\rightarrow^n$ pour $n\in\mathbb{N}$ par récurrence :
 \begin{itemize}
 \item $T\rightarrow^0 T' \Leftrightarrow T=T'$
 \item  $T\rightarrow^{n+1} T' \Leftrightarrow \exists T_1\in E,\ T\rightarrow^n T_1\rightarrow T'$
-\end{itemize}
+\end{itemize} 
 
 Et enfin, on définit : $T\rightarrow^* T' \Leftrightarrow \exists n\in\mathbb{N},T\rightarrow^nT'$.
 
 Soit $T,T'\in\mathcal{M}_{m,n}(\mb{N})$ %(je reprends les notations d'Hugo).
 
-Nous définissons une relation binaire $\rightarrow_e$ entre les configurations de la grille comme suit :
+Nous définissons une relation binaire $\rightarrow_e$ entre les configurations de la grille comme suit : 
 $T\rightarrow_e T'\Leftrightarrow \exists(i,j),T\xrightarrow{(i,j)}T'$.
 
 
 
 
 \begin{lem}
-$\rightarrow_e$ est localement confluente, i.e. pour $T, T_1, T_2\in\mathcal{M}_{m,n}(\mb{N})$ :
+$\rightarrow_e$ est localement confluente, i.e. pour $T, T_1, T_2\in\mathcal{M}_{m,n}(\mb{N})$ : 
 $$\left.\begin{array}{ll}T\rightarrow_eT_1\\T\rightarrow_eT_2\end{array}\right\}\Rightarrow \exists T'\in\mathcal{M}_{m,n}(\mb{N}),\ T_1\rightarrow_e^*T' \mathrm{\ et\ }T_2\rightarrow_e^*T'$$
 \end{lem}
 \begin{proof}
@@ -798,7 +820,7 @@ Soient $T, T_1, T_2\in\mathcal{M}_{m,n}(\mb{N})$ tels que $T\rightarrow_eT_1$ et
 
 On sait donc que $T(i_1, j_1)\geqslant 4$ et que $T(i_2, j_2)\geqslant 4$.
 
-Or, on remarque que lors d'une transition, seule la case qui s'effondre voit son nombre de grains baisser. Par conséquent, comme $(i_1, j_1)\not = (i_2, j_2)$ (car $T_1\not=T_2$), on en déduit que $T_2(i_1, j_1)\geqslant 4$ et que $T_1(i_2, j_2)\geqslant 4$. On peut donc les effondrer :
+Or, on remarque que lors d'une transition, seule la case qui s'effondre voit son nombre de grains baisser. Par conséquent, comme $(i_1, j_1)\not = (i_2, j_2)$ (car $T_1\not=T_2$), on en déduit que $T_2(i_1, j_1)\geqslant 4$ et que $T_1(i_2, j_2)\geqslant 4$. On peut donc les effondrer : 
 $$\exists T', T''\in\mathcal{M}_{m,n}(\mb{N}), T_1\xrightarrow{(i_2,j_2)}T',\ T_2\xrightarrow{(i_1,j_1)}T'' $$
 
 Montrons que $T'=T''$, et on aura démontré la confluence locale. Pour cela, regardons comment a été obtenu $T'$ à partir de $T$ : $T\xrightarrow{(i_1,j_1)}T_1\xrightarrow{(i_2,j_2)}T'$
@@ -825,7 +847,7 @@ Si $\rightarrow_e$ n'était pas fortement normalisante, il existerait une grille
 \end{proof}
 
 \begin{lem} [\bsc{Lemme de Newman}]
-Une relation binaire $\rightarrow$ sur un ensemble $E$ localement confluente et fortement normalisante est confluente, i.e. pour $T, T_1, T_2\in E$ :
+Une relation binaire $\rightarrow$ sur un ensemble $E$ localement confluente et fortement normalisante est confluente, i.e. pour $T, T_1, T_2\in E$ : 
 $$\left.\begin{array}{ll}T\rightarrow^*T_1\\T\rightarrow^*T_2\end{array}\right\}\Rightarrow \exists T'\in E,\ T_1\rightarrow^*T' \mathrm{\ et\ }T_2\rightarrow^*T'$$
 \end{lem}
 \begin{proof}
@@ -848,13 +870,13 @@ Donc il existe $T'''$ tel que $T'\rightarrow_e^*T'''$ et  $T''\rightarrow_e^*T''
 
 \begin{rem} Nous avons démontré dans la preuve de confluence locale que si $T\xrightarrow{(i_1,j_1)}T_1\xrightarrow{(i_2,j_2)}T'$, et si les cases $(i_1,j_1)$ et $(i_2, j_2)$ sont effondrables depuis $T$, alors on a aussi $T\xrightarrow{(i_2,j_2)}T_2\xrightarrow{(i_1,j_1)}T'$.\end{rem}
 
-\begin{coro} Soit une suite de transitions $T\xrightarrow{(i_1,j_1)}T_1\xrightarrow{(i_2,j_2)}T_2\cdots\xrightarrow{(i_n,j_n)}T_n$, telle que la case $(i_n, j_n)$ ne soit effondrée qu'une seule fois, et soit effondrable dans $T$.
+\begin{coro} Soit une suite de transitions $T\xrightarrow{(i_1,j_1)}T_1\xrightarrow{(i_2,j_2)}T_2\cdots\xrightarrow{(i_n,j_n)}T_n$, telle que la case $(i_n, j_n)$ ne soit effondrée qu'une seule fois, et soit effondrable dans $T$. 
 
-Alors, il existe $T'_1, \ldots, T'_{n-1}$ tels que :
+Alors, il existe $T'_1, \ldots, T'_{n-1}$ tels que : 
 $$T\xrightarrow{(i_n,j_n)}T'_1\xrightarrow{(i_1,j_1)}T'_2\cdots\xrightarrow{(i_{n-2},j_{n-2})}T'_{n-1}\xrightarrow{(i_{n-1},j_{n-1})}T_n$$
  \end{coro}
-
-\begin{rem}L'important est de voir que :
+ 
+\begin{rem}L'important est de voir que : 
 \begin{enumerate}
 \item La grille de début et de fin ne changent pas.
 \item Les cases effondrées sont les mêmes.
@@ -863,39 +885,39 @@ $$T\xrightarrow{(i_n,j_n)}T'_1\xrightarrow{(i_1,j_1)}T'_2\cdots\xrightarrow{(i_{
 \end{rem}
  \begin{proof}
  Par récurrence sur $n$.
-
+ 
  Pour $n=1$, le théorème est immédiat.
-
+ 
  Le cas $n=2$ découle de l'avant-dernière remarque.
-
+ 
  Pour le cas $n+1$ : supposons qu'on ait $T\xrightarrow{(i_1,j_1)}T_1\xrightarrow{(i_2,j_2)}T_2\cdots\xrightarrow{(i_{n+1},j_{n+1})}T_{n+1}$.
-
+ 
  En particulier, nous avons $T_{n-1}\xrightarrow{(i_{n},j_{n})}T_n\xrightarrow{(i_{n+1},j_{n+1})}T_{n+1}$.
-
+ 
  Comme par hypothèse, la case $(i_{n+1},j_{n+1})$ est effondrable depuis $T$, et n'est jamais effondrée avant la dernière transition, on en conclut que $T_k(i_{n+1},j_{n+1})\geqslant 4$ pour $1\leqslant k \leqslant n$, i.e. cette case est effondrable sur toutes les grilles intermédiaires, donc depuis $T_{n-1}$.
-
- De plus, la case $(i_{n},j_{n})$ est effondrable depuis $T_{n-1}$. Par conséquent, en appliquant la remarque (ou le cas $n=2$), on en conclut qu'il existe $T'_n$ tel que :
+ 
+ De plus, la case $(i_{n},j_{n})$ est effondrable depuis $T_{n-1}$. Par conséquent, en appliquant la remarque (ou le cas $n=2$), on en conclut qu'il existe $T'_n$ tel que : 
  $$T_{n-1}\xrightarrow{(i_{n+1},j_{n+1})}T'_n\xrightarrow{(i_{n},j_{n})}T_{n+1}$$
-
- En appliquant l'hypothèse de récurrence à $T\xrightarrow{(i_1,j_1)}T_1\xrightarrow{(i_2,j_2)}T_2\cdots\xrightarrow{(i_{n-1},j_{n-1})}T_{n-1}\xrightarrow{(i_{n+1},j_{n+1})}T'_n$, on obtient l'existence de $T'_1, \ldots, T'_{n-1}$ tels que :
+ 
+ En appliquant l'hypothèse de récurrence à $T\xrightarrow{(i_1,j_1)}T_1\xrightarrow{(i_2,j_2)}T_2\cdots\xrightarrow{(i_{n-1},j_{n-1})}T_{n-1}\xrightarrow{(i_{n+1},j_{n+1})}T'_n$, on obtient l'existence de $T'_1, \ldots, T'_{n-1}$ tels que : 
 $$T\xrightarrow{(i_{n+1},j_{n+1})}T'_1\xrightarrow{(i_1,j_1)}T'_2\cdots\xrightarrow{(i_{n-2},j_{n-2})}T'_{n-1}\xrightarrow{(i_{n-1},j_{n-1})}T'_n$$
 
-Et finalement, en recollant :
+Et finalement, en recollant : 
 
 $$T\xrightarrow{(i_{n+1},j_{n+1})}T'_1\xrightarrow{(i_1,j_1)}T'_2\cdots\xrightarrow{(i_{n-2},j_{n-2})}T'_{n-1}\xrightarrow{(i_{n-1},j_{n-1})}T'_n\xrightarrow{(i_{n},j_{n})}T_{n+1}$$
-
+ 
   \end{proof}
 
 \begin{theo}
-Soient deux suites d'exécution du tas de sable : $T\xrightarrow{(i_1,j_1)}T_1\xrightarrow{(i_2,j_2)}T_2\cdots\xrightarrow{(i_n,j_n)}T_f$ et $T\xrightarrow{(i'_1,j'_1)}T'_1\xrightarrow{(i'_2,j'_2)}T'_2\cdots\xrightarrow{(i'_{n'},j'_{n'})}T_f$, avec $T_f$ normal.
+Soient deux suites d'exécution du tas de sable : $T\xrightarrow{(i_1,j_1)}T_1\xrightarrow{(i_2,j_2)}T_2\cdots\xrightarrow{(i_n,j_n)}T_f$ et $T\xrightarrow{(i'_1,j'_1)}T'_1\xrightarrow{(i'_2,j'_2)}T'_2\cdots\xrightarrow{(i'_{n'},j'_{n'})}T_f$, avec $T_f$ normal. 
 
 Alors $\{\!\!\{(i_1, j_1), \ldots, (i_n, j_n) \}\!\!\}=\{\!\!\{(i'_1, j'_1), \ldots, (i'_{n'}, j'_{n'}) \}\!\!\}$ (égalité des multiensembles, c'est-à-dire que les cases effondrées sont les mêmes, et sont effondrées le même nombre de fois. En particulier, $n=n'$).
 \end{theo}
 
 \begin{proof}
-On effectue une récurrence sur la longueur $L$ de la plus petite séquence. Supposons sans perte de généralité que la plus petite séquence est la première séquence.
+On effectue une récurrence sur la longueur $L$ de la plus petite séquence. Supposons sans perte de généralité que la plus petite séquence est la première séquence. 
 
-Si $L=1$, alors on a $T\xrightarrow{(i_1,j_1)}T_f$ et $T\xrightarrow{(i'_1,j'_1)}T'_1\xrightarrow{(i'_2,j'_2)}T'_2\cdots\xrightarrow{(i'_{n'},j'_{n'})}T_f$.
+Si $L=1$, alors on a $T\xrightarrow{(i_1,j_1)}T_f$ et $T\xrightarrow{(i'_1,j'_1)}T'_1\xrightarrow{(i'_2,j'_2)}T'_2\cdots\xrightarrow{(i'_{n'},j'_{n'})}T_f$. 
 
 Comme $T_f$ est normal, au moins toutes les cases de $T$ qui étaient effondrables ont été effondrées. Donc la case $(i'_1, j'_1)$ est effondrée à un moment dans la première séquence. Donc $(i_1, j_1)=(i'_1, j'_1)$. Donc $T'_1=T_f$ et est donc normal, donc $n'=1$.
 
@@ -908,18 +930,18 @@ Soit $k$ le plus petit entier tel que $(i_1, j_1)=(i'_k, j'_k)$.
 Alors dans la suite de transitions $T\xrightarrow{(i'_1,j'_1)}T'_1\xrightarrow{(i'_2,j'_2)}T'_2\cdots\xrightarrow{(i'_{k},j'_{k})}T'_{k+1}$, la case $(i_1, j_1)=(i'_k, j'_k)$ n'est effondrée qu'une seule fois, et est effondrable dans $T$. D'après le corollaire, il existe $Q'_1, \ldots, Q'_{k}$ tels que :
 $$T\xrightarrow{(i_1,j_1)}Q'_1\xrightarrow{(i'_1,j'_1)}Q'_2\cdots\xrightarrow{(i'_{k-1},j'_{k-1})}T'_{k+1}$$
 
-Mais alors, en recollant, on a :
+Mais alors, en recollant, on a : 
 
 $$T\xrightarrow{(i_1,j_1)}T_1\xrightarrow{(i_2,j_2)}T_2\cdots\xrightarrow{(i_n,j_n)}T_f$$
 $$T\xrightarrow{(i_1,j_1)}Q'_1\xrightarrow{(i'_1,j'_1)}Q'_2\cdots\xrightarrow{(i'_{k-1},j'_{k-1})}T'_{k+1}\xrightarrow{(i'_{k+1},j'_{k+1})}\cdots\xrightarrow{(i'_{n'},j'_{n'})}T_f$$
 
-On en déduit que $T_1=Q'_1$, et donc que l'on dispose maintenant des deux séquences de longueur plus petites :
+On en déduit que $T_1=Q'_1$, et donc que l'on dispose maintenant des deux séquences de longueur plus petites : 
 
 $$T_1\xrightarrow{(i_2,j_2)}T_2\cdots\xrightarrow{(i_n,j_n)}T_f$$
 $$T_1\xrightarrow{(i'_1,j'_1)}Q'_2\cdots\xrightarrow{(i'_{k-1},j'_{k-1})}T'_{k+1}\xrightarrow{(i'_{k+1},j'_{k+1})}\cdots\xrightarrow{(i'_{n'},j'_{n'})}T_f$$
 
 avec $T_f$ qui est normal. Par hypothèse de récurrence,\\
-$\{\!\!\{(i_2, j_2), \ldots, (i_n, j_n) \}\!\!\}=\{\!\!\{(i'_1, j'_1), \ldots, (i'_{k-1},j'_{k-1}), (i'_{k+1},j'_{k+1}), \ldots (i'_{n'}, j'_{n'}) \}\!\!\}$, et comme $(i_1, j_1)=(i'_k, j'_k)$, on a finalement :
+$\{\!\!\{(i_2, j_2), \ldots, (i_n, j_n) \}\!\!\}=\{\!\!\{(i'_1, j'_1), \ldots, (i'_{k-1},j'_{k-1}), (i'_{k+1},j'_{k+1}), \ldots (i'_{n'}, j'_{n'}) \}\!\!\}$, et comme $(i_1, j_1)=(i'_k, j'_k)$, on a finalement : 
 
 $$\{\!\!\{(i_1, j_1), \ldots, (i_n, j_n) \}\!\!\}=\{\!\!\{(i'_1, j'_1), \ldots, (i'_{n'}, j'_{n'}) \}\!\!\}$$
 
@@ -934,80 +956,26 @@ $$\{\!\!\{(i_1, j_1), \ldots, (i_n, j_n) \}\!\!\}=\{\!\!\{(i'_1, j'_1), \ldots, 
 Quelle que soit l'exécution de l'algorithme du tas de sable sur une grille $T$, la grille finale est unique, et la liste des cases effondrées est unique à l'ordre près.
 \end{coro}
 
-\section{Le cas d'une grille infini [Etienne,Mathieu]}
-\begin{definition}[\bsc{Tas de sable}]
-On étend la définition precedente tel que un Tas de sable $T$ est une fonction.
-$T : \mb{Z}^2 \rightarrow \mb{N}$
-On notera $T_{\{\}}$, l'ensemble des grains de sable du tas $T$.
-\end{definition}
-
-%C'est très proche de la définition d'un écoulement fini (Première Partie). Possibilité d'harmoniser pour n'avoir qu'une seule définition, commune ?
-%-- Thomas
-\begin{definition}[\bsc{Sequence}]
-On definit une séquence $(T_{i})_{1\leq i\leq n}$ de tas successifs si $\forall 1\leq i<n, \exists (p,q) ,T_{i}\xrightarrow{(p,q)}T_{i+1}$.
-\end{definition}
-
-\begin{definition}[\bsc{Barycentre}]
-On appelle barycentre d'un tas $T$ le couple $B(T) = (p_G,q_G)$ tel que :
-$$p_G = \frac{\sum_{(p,q)\in \mb{Z}^2} T(p,q) * p}{|T|}$$
-$$q_G = \frac{\sum_{(p,q)\in \mb{Z}^2} T(p,q) * q}{|T|}$$
-
-$p_{G}$ resp. $q_{G}$ existe car $|T|$ est fini donc $\sum_{(p,q) \in \mb{Z}^2} T(p,q)$ converge.
-\end{definition}
-
 \begin{theo}
-$\forall (p,q) \in \mb{Z}^2$, si $T\xrightarrow{(p,q)}T'$, alors $B(T) = B(T')$
+Soient deux suites d'exécution du tas de sable : $T\xrightarrow{(i_1,j_1)}T_1\xrightarrow{(i_2,j_2)}T_2\cdots\xrightarrow{(i_n,j_n)}T'$ et $T\xrightarrow{(i'_1,j'_1)}T'_1\xrightarrow{(i'_2,j'_2)}T'_2\cdots\xrightarrow{(i'_{n'},j'_{n'})}T'$, avec $T'$ \textbf{quelconque}. 
+
+Alors $\{\!\!\{(i_1, j_1), \ldots, (i_n, j_n) \}\!\!\}=\{\!\!\{(i'_1, j'_1), \ldots, (i'_{n'}, j'_{n'}) \}\!\!\}$.
 \end{theo}
-
 \begin{proof}
-Soit $T,T'$ tel que $T\xrightarrow{(p,q)}T'$.
-$$p_{G}^{T'} = \frac{\sum_{(p,q)\in \mb{Z}^2} T(p,q) * p - 2*p + p+1 +p-1 }{|T|}$$
-$$p_{G}^{T'} = \frac{\sum_{(p,q)\in \mb{Z}^2} T(p,q)}{|T|}$$
-$$p_{G}^{T'} = p_{G}^{T}$$
-La preuve est similaire pour $q_{G}$.
+La différence avec la proposition précédente est que $T'$ n'est pas forcément normal.
+
+Comme on a la forte normalisation, on sait qu'il existe une suite d'exécution du tas de sable : $T'\xrightarrow{(i''_1,j''_1)}T''_1\xrightarrow{(i''_2,j''_2)}T''_2\cdots\xrightarrow{(i''_m,j''_m)}T_f$ avec $T_f$ normal.
+
+On a donc les deux séquences suivantes : 
+$$T\xrightarrow{(i_1,j_1)}T_1\xrightarrow{(i_2,j_2)}T_2\cdots\xrightarrow{(i_n,j_n)}T'\xrightarrow{(i''_1,j''_1)}T''_1\xrightarrow{(i''_2,j''_2)}T''_2\cdots\xrightarrow{(i''_m,j''_m)}T_f$$
+$$T\xrightarrow{(i'_1,j'_1)}T'_1\xrightarrow{(i'_2,j'_2)}T'_2\cdots\xrightarrow{(i'_{n'},j'_{n'})}T'\xrightarrow{(i''_1,j''_1)}T''_1\xrightarrow{(i''_2,j''_2)}T''_2\cdots\xrightarrow{(i''_m,j''_m)}T_f$$ 
+avec $T_f$ normal.
+
+D'après la proposition précédente, on a $\{\!\!\{(i_1, j_1), \ldots, (i_n, j_n), (i''_1,j''_1), \ldots, (i''_m,j''_m) \}\!\!\}=\{\!\!\{(i'_1, j'_1), \ldots, (i'_{n'}, j'_{n'}), (i''_1,j''_1), \ldots, (i''_m,j''_m) \}\!\!\}$.
+
+Et donc $\{\!\!\{(i_1, j_1), \ldots, (i_n, j_n) \}\!\!\}=\{\!\!\{(i'_1, j'_1), \ldots, (i'_{n'}, j'_{n'}) \}\!\!\}$.
 \end{proof}
 
-\begin{theo}
-Il n'existe aucune suite d'écoulement qui permet à un grain de sable de s'écouler vers l'infini dans une direction.
-\end{theo}
-
-\begin{proof}
-Soit $(T)$ une séquence, supposons qu'il existe $s_{0} \in T_{\{\}}$ tel que $s_{0}$ s'écoule vers l'infini.
-Quitte à effectuer une rotation/transition de l'origine on a :
-\\$\forall P \in \mb{Z}, \exists q, \exists n, T^{n}(P,q) > 0$
-On considère l'ensemble de grain de sable $<s_{0}>$ tel que $s_{0} \in <s_{0}>$ et
-\\$<s_{0}> =\{ s \in T_{\{\}} | \forall n \in \mb{N}, \exists N>n, \exists s' \in T_{}, T^{N}\xrightarrow{(s,s',.,.)}T^{N+1} \} $
-
-\begin{lem}
-L'ensemble des grains de $<s_{0}>$ s'écroule vers l'infini.
-%preuve détaillé
-\end{lem}
-\begin{proof}
-Soit $s\in<s_0>$  tel que $s$ ne s'écoule pas a l'infini. Soit $P_{s} = max_{n \in \mb{N}}(p_{s}^{n})$ ou $p_{s}^{n}$ est la composante une de la position de $s$ dans la grille $T_{n}$.
-%C'est pas terrible du tout faut mieux faire
-\\$\forall N$ tel que $p_{s_0}^n > P$, il existe $N' > N$ tel que $T^{N'}\xrightarrow{(s,s',.,.)}T^{N'+1}$ avec $s' \in <s_0>$ "alors $s'$ ne s'écoule pas non plus vers l'infini ($|<s_0>|$ étant fini), par récurrence, on en déduit que $s_0$ ne s'écoule pas vers l'infini, ce qui est absurde."
-%p_{s}^{n} a définir$
-\end{proof}
-
-\begin{lem}
-Il existe un entier N, tel que à partir de ce rang on peut extraire une sous-suite de $(T_{\geq N})$ tel que les écoulement de cette sous séquence ne font intervenir que les grains de $<s_{0}>$
-%trés fastidieux a prouvé formellement.
-\end{lem}
-
-\begin{proof}
-Soit $(p,q)_n$ une suite d'écroulement, supposons qu'il n'existe aucun entier $N$ tel que l'on puisse extraire une sous-suite d'écoulement ne faisant intervenir que les grains de $<s_{0}>$
-Alors $\forall N, \exists N'>N$ tel que $T^{N'}\xrightarrow{(s_1,s_2,s_3,s_3)}T^{N'+1}$ ne fasse pas intervenir que des éléments de $<s_{0}>$ et soit indispensable, alors $s_1,s_2,s_3,s_3 \notin <s_{0}>$, sinon absurde vis-à-vis de la définition de $<s_{0}>$.
-Alors l'un des éléments écoulés est nécessaire pour l'écoulement futur d'un élément de $<s_0>$. Ainsi par propagation il appartient aussi à $<s_0>$, ce qui est absurde.
-
-\end{proof}
-
-
-Alors $B(T_{N}) \neq lim_{n \rightarrow \infty} B(T_{n})$ ce qui est absurde.
-
-Donc il n'existe pas d'écoulement infini.
-\end{proof}
-
-Ainsi on peut se ramener au cas fini en bornant.
 
 \medbreak
 \medbreak
@@ -1040,7 +1008,41 @@ Par l'absurde, si il existe un écoulement infini $T_0\xr{0}T_1\xr{1} \cdots \xr
 \end{proof}
 
 
-\section{Généralisation à des graphe finis}
+\subsection{Terminaison de la règle d'effondrement dans le cas d'un tas de sable infini a nombre de grains de sable fini [Section 7 alternative][Thomas,Hugo]}
+
+\begin{lem}
+%\label{trainedesable}
+Soit $T$ un tas de sable infini contenant un nombre fini de grains de sable et $i\in\mb{Z}$.
+Si $\exists j,T(i,j)\neq 0$ alors pour tout tas de sable $T'$ tel que $T\rightarrow^*T'$, on a $\exists j,T'(i,j)\neq 0$.
+\end{lem}
+\begin{proof}
+Clair par récurrence sur la longueur de l'écoulement.
+\end{proof}
+
+\begin{theo}
+Soit $T_0$ un tas de sable infini contenant un nombre fini de grains de sable. Il n'existe pas d'écoulement infini à partir de $T_0$.
+\end{theo}
+\begin{proof}
+Par l'absurde, supposons qu'il existe un écoulement infini $E=T_0\xr{0}T_1\xr{1} \cdots \xr{k-1} T_k \xr{k} \cdots$. Considérons les ensembles $I=\{i_k|k\in\mb{N}\}$ et $J=\{j_k|k\in\mb{N}\}$ (les ensembles des coordonnées des cases subissant un effondrement dans E).
+\begin{itemize}
+\item{Si $I$ et $J$ sont finis.\\}
+Alors le nombre de cases distinctes s'effondrant est fini. Dans ce cas, on peut construire $T'$ une sous-matrice finie de $T_0$ contenant tout les grains de sable de $T_0$ et toutes les cases s'effondrant dans $E$ de telle sorte que les 4 cases voisines de celles-ci soient également dans $T'$.
+
+Par construction, la partie de $T_0$ n'étant pas contenue dans $T'$ est constituée uniquement de cases vides (contenant 0 grains de sables) dont le nombre de grains de sable ne variera jamais au cours de E (car aucune d'elle n'est adjacente à une case s'effondrant dans $E$).Par conséquent, on peut étudier indifféremment l'écoulement $E$ où sa restriction à $T'$ : On s'est ramené au cas d'un écoulement infini sur un tas de sable fini.
+
+On a cependant montré dans une section précédente qu'il ne pouvait y avoir d'écoulement infini sur un tas de sable fini. Par conséquent, l'existence de l'écoulement $E$ est absurde.
+\item{Si $I$ ou $J$ est infini\\}
+Quitte à transposer $T_0$, on suppose que $I$ est infini. $I$ contenant l'ensemble des numéros de ligne des cases s'effondrant au cours de $E$, on a : $\forall i\in I,\exists u \in \mb{N}, \exists j \in \mb{Z}, T_u(i,j)\neq 0$. D'après le lemme 7.4, on a, pour tout $v\geq u$, $\exists j, T_v(i,j)\neq 0$. Autrement dit, chacune des lignes de $T_0$ contenant une case s'effondrant dans $E$ contiendra, à une certaine étape de $E$, au moins un grain de sable. Le lemme 7.4 permet d'affirmer que la ligne en question contiendra toujours au moins un grain de sable à toutes les étapes ultérieures de $E$. Comme $I$ est infini, le nombre de lignes contenant au moins un grains de sable 
+%tend vers l'infini
+augmente indéfiniment au cours de $E$.
+. Ce qui contredit la décroissance de la masse de sable 
+lors d'un effondrement
+(lemme \ref{lemmedecroissance}), ce qui est absurde.  
+%ajouter lien vers le lemme
+\end{itemize}
+\end{proof}
+
+\section{Généralisation à des graphes finis}
 %cela s'adapte à des graphes non-connexes orienté avec arête multiple ??
 %Non connexes ne sert pas car cela reviens à considérer n problèmes connexes.
 On considère ici des graphes connexes non-orientés à arête simple $G=(V,E)$ où $V$ est l'ensemble des noeuds et $E$ l'ensemble des arête. On dit que $v'$ est un voisin de $v$ si $\{v,v'\}\in E$. On note $d(v)$ le degré d'un noeud $v$, c'est-à-dire son nombre de voisins.
@@ -1069,10 +1071,10 @@ On dit que $T$ a une fuite si $\exists v\in V, e(v)>0$.
 On appelle le nombre de grain de  $T$ l'entier naturel $\sum_{v\in V} g(v)$, noté $|T|$.
 \end{definition}
 
-On présente ici des lemmes qui découle de la définition, qui seront utile plus tard.
+On présente ici des lemmes qui découlent de la définition, qui seront utiles plus tard.
 \begin{lem}
 \label{lemmedecroissancegraph}
-Soit $T=(G,g,e)$ et $T'=(G,g',e)$ des graphes de sable tels que $T\xra{v}T'$. Alors $|T|\geq |T'|$.
+Soit $T=(G,g,e)$ et $T'=(G,g',e)$ des graphes de sable tels que $T\xra{v}T'$. Alors $|T|\geq |T'|$. 
 
 De plus $|T|=|T'|$ si et seulement si $e(v) = 0$.
 \end{lem}
@@ -1080,7 +1082,7 @@ De plus $|T|=|T'|$ si et seulement si $e(v) = 0$.
 \begin{lem}
 \label{lemmeextractiongraph}
 Soit $T=((E,V),g,e)$ et $T'=((E,V),g',e)$ des graphes de sable tels que $T\xra{v}T'$. Soit $V_1 \subseteq V $. \\
-Si $v\in V_1$ alors en notant $E_1 = E \cap (V_1 \times V_1  )$ et en posant pour tout $v\in V_1$, $e_1(v)=e(v) + |\{v\in V \setminus V_1\}|$, $T_1 = ((E_1,V_1),g_{|V_1},e_1)$ et $ T_1'= ((E_1,V_1),g'_{|V_1},e_1) $ on a
+Si $v\in V_1$ alors en notant $E_1 = E \cap (V_1 \times V_1  )$ et en posant pour tout $v\in V_1$, $e_1(v)=e(v) + |\{v\in V \setminus V_1\}|$, $T_1 = ((E_1,V_1),g_{|V_1},e_1)$ et $ T_1'= ((E_1,V_1),g'_{|V_1},e_1) $ on a 
 \begin{equation*} T_1 \xra{v} T_1' \end{equation*}
 \end{lem}
 
@@ -1110,7 +1112,7 @@ Soit $T$ un graphe de sable. Si $T$ a une fuite, alors il n'existe pas d'écoule
 \begin{proof}
 % * <mathieu.huot@voila.fr> 2015-09-28T12:33:03.707Z:
 %
-%
+% 
 %
 La terminaison se démontre de façon similaire, par récurrence sur la taille des graphes. De même on obtient un écoulement cyclique où $|T|$ se conserve (on remarque que si $T$ a une fuite et $T\ra^*T'$ alors $T'$ a une fuite). Ainsi les cases qui ont une fuite ne s'effondre jamais, et on peut extraire un sous-graphe de sable avec un écoulement cyclique. Ce sous-graphe a aussi une fuite car par connexité du graphe on a forcément supprimé un voisin en extrayant un sous-graphe et donc ajouté une fuite, d'où une contradiction.
 \end{proof}
@@ -1119,9 +1121,9 @@ Autre preuve:
 \begin{proof}
 Conséquence direct du lemme précédant.
 \end{proof}
-\section{Généralisation à des graphe infinis}
+\section{Généralisation à des graphes infinis}
 %je n'ai jamais manipulé de graphe infini, j'ai mis des conditions pour éviter des graphes bizarres, mais je ne sais pas si elle sont nécessaires, et pas certain qu'elles soient suffisantes.
-On considère ici des graphes $G=(V,E)$ infinis dénombrables, connexes non-orientés à arêtes simples. On suppose que le nombre de voisins est fini pour tout noeud. On suppose que le nombre de grains de sable est fini, c'est-à-dire $\sum_{v\in V} g(v)<\infty$. On souhaite montrer la terminaison. %Par connexe on entend qu'il existe une chemin fini entre chacun de ses noeuds.
+On considère ici des graphes $G=(V,E)$ infinis dénombrables, connexes non-orientés à arêtes simples. On suppose que le nombre de voisins est fini pour tout noeud. On suppose que le nombre de grains de sable est fini, c'est-à-dire $\sum_{v\in V} g(v)<\infty$. On suppose de plus que le graphe est sans perte. On souhaite montrer la terminaison. %Par connexe on entend qu'il existe une chemin fini entre chacun de ses noeuds.
 %par définition il me semble qu'un graphe ne possède pas de chemin infini entre 2 noeuds.
 
 \begin{lem}
@@ -1133,6 +1135,7 @@ Sinon, on peut extraire le graphe fini des $\{v_i|i\in\mb{N}\}$ en remplaçant l
 \end{proof}
 
 \begin{lem}
+\label{consistancesommets}
 Soit $T$ un graphe de sable infini, soit $u$ et $v$ deux nœuds voisins. Si $g(u)+g(v)>0$ alors pour tout $T'$ tel que $T\ra^* T'$, on a $g(u)+g(v)>0$.
 \end{lem}
 \begin{proof}
@@ -1146,14 +1149,103 @@ Si ni $u$, ni $v$ ne sont effondrés alors $g(u) + g(v) > 0$.
 Il ne peut y avoir d'écoulement infini de graphes de sable infini.
 \end{theo}
 
-%bientôt un preuve
+\begin{proof}
+Preuve par l'absurde.\\
+Si il existe un écoulement infini $T_0\xra{v_0}T_1\xra{v_1}\cdots$, alors d'après le lemme \ref{fuiteinfini} $\{v_i|i\in \mathbb{N}\}$ est infini. Donc (à développer), il y a un chemin infini dans le graphe qui est composé de sommet effondré par l'écoulement. Or en découpant le chemin par couple de 2 sommets, d'après le lemme \ref{consistancesommets} il y a une infinité de grain de sable, ce qui est absurde.
+\end{proof}
+%pseudo preuve il faut que je la reprenne.
 
+\section{Problème du tas simple}
+
+Dans cette section, nous nous interesserons à un problème simplifié. On se place dans le cas d'une grille carrée infinie, et on place un nombre $t_0$ de grain sur une case, qui sera par convention la case (0,0). On s'interesse alors  à l'écoulement de ce tas de sable simple, et à la surface ainsi crée. 
+
+\textbf{Exemple de tas simple}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+& & & & \\
+\hline
+& & & & \\
+\hline
+& & 20& & \\
+\hline
+& & & & \\
+\hline
+& & & & \\
+\hline
+\end{tabular}
+\quad
+$\xrightarrow{(2,2)}$
+\quad
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+& &1 & & \\
+\hline
+&2 &2 & 2& \\
+\hline
+1& 2& 0& 2&1 \\
+\hline
+& 2& 2&2 & \\
+\hline
+& & 1& & \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Complexité du problème}
+
+On va chercher à montrer le théorème suivant
+
+\begin{theo}
+L'écoulement d'un tas de sable simple avec $t_0$ grain initialement est se fait en un nombre $\Theta(t_0^2)$ d'étapes
+\end{theo}
+
+
+\begin{definition}[\bsc{Domino}]
+Soit T un tas de sable infini. Un \textit{domino} D est une sous matrice de T de taille $ 2\times 2$ tel que le coin inférieur gauche de D soit de coordonées paires. On repère un domino par son coin inférieur gauche, et on note $Td_{(i,j)}$ le Domino dont le coin inférieur gauche est en position $(2*i,2*j)$   .   
+\end{definition}
+
+On peut remarquer que, si il y a un grain de sable dans un domino à un moment donné de l'écoulement, il y en aura toujours. Par conséquent, si on place $t_0$ grain de sable, il ne pourra pas y avoir plus de $t_0$ occupés après effondrement.   
+
+ On appelle \textit{losange} de taille n l'ensemble de domino suivant $\{ Td_{(i,j)} |   |i|+|j|= n \} $. On note cet ensemble $\Delta_n$
+ 
 \begin{lem}
-Dans un graphes de sable infini, si il existe un écoulement infini alors l'ensemble des sommets effondrés est infini.
+Lors de l'écoulement d'un tas de sable simple, si un domino appartenant à un losange de taille n contient un grain de sable, alors tous les domino des losanges de taille inférieur à n contiennent un grain de sable au moins.
 \end{lem}
 
+% Il faudrait dévellopper cette preuve, ce qui n'est pas simple
 \begin{proof}
-Même genre de démonstration que le lemme \ref{lemmeecoulementinfini}.
+Cette propriété vient du fait que les cases des dominos de la couronne de taille n sont plus loin de (0,0) que toutes les cases des dominos des couronnes inférieures.  
 \end{proof}
 
+On cherche alors alors le plus petit n tel que que losanges de taille inférieur n contiennent au moins $t_0$ domino, et donc $t_0$ grain. Cela revient a trouver n tel que:
+
+	\[
+    t_0 \leq \sum\limits_{\substack{0 \leq i\leq n\\ }} |\Delta_{i}|
+    \]
+
+	\[
+   t_0 \leq  \frac{n \times (n+1)}{2}+ \frac{n \times (n-1)}{2} 
+	\] 
+    
+    \[
+    t_0 \leq 2 n^2    
+    \]
+
+	\[
+   \sqrt{\frac{t_0}{2}} \leq n
+    \]
+    
+Prenons par exemple $n_0=\lceil \sqrt{\frac{t_0}{2}} \rceil $. Si l'on place $t_0$ grain sur une case de la matrice, les grains resteront compris dans les losanges de taille inférieure ou égale à $n_0$, donc dans une sous-matrice carrée de taille $2 \times n_0$ On peut donc se ramener au cas fini. La valuation (au sens de la partie II), de la matrice extraite initialement vérifie :
+
+	\[
+   v(t)=t_0 \times (\frac{(n_0+1) \times (n_0+3)}{2}+1)
+    \]
+    
+    \[
+    v(t)=\mathrm{O}(t_0^2)
+    \]
 \end{document}
+
+
+
