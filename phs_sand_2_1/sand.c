@@ -99,8 +99,8 @@ void deal_with_normal_form ( void )
 #ifdef DEBUG_BINARY_BOARD
   dump_current_memmatrix (stdout);
 #endif /* DEBUG_BINARY_BOARD */
-  assert (xmax - xmin == diam - 1);
-  assert (ymax - ymin == diam - 1);
+  assert (asymmetrical_job || xmax - xmin == diam - 1);
+  assert (asymmetrical_job || ymax - ymin == diam - 1);
   assert (asymmetrical_job || xmin + xmax == 0);
   assert (asymmetrical_job || ymin + ymax == 0);
   if (cheat_opt == false) assert (stabilized_p());
@@ -258,6 +258,7 @@ int main (int argc, char *argv[])
       for (i = -1; i <= 1; i++)
 	for (j = i; j <= 1; j++)
 	  add_grains_on_square(i,j,1);
+      add_grains_on_square(3,0,1);
       //REMOVE: display_the_board(stdout, true);
       goto_normal_form();
     }
