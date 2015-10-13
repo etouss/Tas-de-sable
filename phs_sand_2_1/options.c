@@ -235,7 +235,7 @@ static char* progname;
 
 void process_calling_arguments (int argc, char *argv[])
 {
-TRACEIN;
+  TRACEIN;
   progname = argv[0];
 
   parse_options (argc, argv);	/* first parse all. Crashing on errors */
@@ -255,14 +255,11 @@ TRACEIN;
       cantcontinue("Graphical -g and underground -u modes incompatible.\n");
     } else {
       cursing_mode = true;
-      terminal_mode = false;
+      terminal_mode = underground_mode = false;
     }
   }
   if (underground_opt) {
-    if (with_data_file) {
-      underground_mode = true;
-      terminal_mode = false;
-    } else {
+    if (! with_data_file) {
       cantcontinue("Underground -u mode requires data_file mode.\n");
     }
     if (strcmp(machine_uname(), SERVER_UNAME) == 0) {
@@ -270,7 +267,9 @@ TRACEIN;
 	cantcontinue("Underground -u mode on machine %s required being in dir %s.\n", SERVER_UNAME, REQUIRED_DIR_ON_SERVER);
       }
     }
-  }
+    underground_mode = true;
+    terminal_mode = cursing_mode = false;
+  } /* underground_mode */
   TRACEOUT;
 }
 

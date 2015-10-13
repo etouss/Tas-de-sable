@@ -28,7 +28,7 @@ void record_normal_form (FILE * f)
     default:
       cantcontinue("ERROR: %s: Unknown selected_report = %d.\n", __func__, selected_report);
     }
-//FIXME: we need a clearer policy of fflush for stats file.
+    //FIXME: we need a clearer policy of fflush for stats file.
     if ( (nbsteps - prev_nbsteps > K100) || (diam > prev_diam) )
       fflush(f);
   }
@@ -40,7 +40,7 @@ void record_normal_form (FILE * f)
       take_snapshot();
     }
   }
-  if (cursing_mode == false) {
+  if (terminal_mode) {
     switch (selected_report) {
     case NEW_MASS:
       printf ("! Normal form for M=%d: T=%llu D=%d c0=%d c1=%d c2=%d c3=%d\n", mass, nbsteps, diam, count0, count1, count2, count3 );
@@ -51,8 +51,10 @@ void record_normal_form (FILE * f)
     default:
       cantcontinue("ERROR: %s: Unknown selected_report = %d.\n", __func__, selected_report);
     }
-  } else {			/* cursing mode */
+  } else if (cursing_mode) {			/* cursing mode */
     display_cursing_mass_data();
+  } else {
+    assert(underground_mode);
   }
   prev_nbsteps = nbsteps; prev_diam = diam; /* record for next time */
 }

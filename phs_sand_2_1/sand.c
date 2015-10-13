@@ -258,7 +258,6 @@ int main (int argc, char *argv[])
       for (i = -1; i <= 1; i++)
 	for (j = i; j <= 1; j++)
 	  add_grains_on_square(i,j,1);
-      add_grains_on_square(3,0,1);
       //REMOVE: display_the_board(stdout, true);
       goto_normal_form();
     }
