@@ -9,7 +9,7 @@ nb3 = []
 # time = []
 # poly = []
 
-f = open("tas_sable_stats_jqa_1701414.txt")
+f = open("stats_sand_v2.6TjqaM23742475.txt")
 for ligne in f.readlines():
     data = ligne.split(" ")
     mass += [int(data[0].split("=")[1])]

@@ -1,0 +1,28 @@
+\section{Terminaison dans le cas des graphs}
+\begin{lem}
+Soit $T$ un graph de grain de sable, si il existe un écoulement infini alors chaque arrête est parcourus au moins une fois.
+\end{lem}
+
+\begin{proof}
+Immediat car on a prouvé que sur un run infini chaque sommet est visité une infinité de foi.
+\end{proof}
+
+\begin{lem}
+Soit $a = (s,s')$ une arrête visité, alors pour tout écoulement futur, $g(s) \neq 0 \vee g(s') \neq 0$.
+\end{lem}
+
+\begin{proof}
+Pareil que pour les domino.
+\end{proof}
+
+\begin{lem}
+Pour toute arrête visité $a_0=(s,s')$, on peut attribué un grain $g_0$ qui restera toujours sur cette arrete $g_0 \in s' \vee g_0 \in s$.
+\end{lem}
+\begin{proof}
+(Par induction sur les effondrement)Il existe un grain $g_0$ tel que que $g_0 \in s$ ou $g_0 \in s'$, grace au lemme precedant.
+On considere un effondrement de la grille, si l'éffondrement n'est pas sur $s$ ou $s'$ alors la propriété est vérifié.
+Si l'éffondrement est sur $s$ resp. $s'$ alors qui a ordonnée les grain de sable on peux donner $g_0$ a $s'$ resp. $s$.
+\end{proof}
+
+Ainsi si il existe un écoulement infini, chaque arrete étant visité au moins une fois, il y a au moins $|A|$ grain de sable sur le graph.
+Donc pour tout graph de grain de sable avec $|A|-1$ grain de sable, l'éffondrement est fini.
