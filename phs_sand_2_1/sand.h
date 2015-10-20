@@ -6,6 +6,7 @@
 #ifndef MAKEDEPEND_IGNORE
 #include <limits.h> 		/* (U)INT_MAX */
 #include <time.h> 		/* time_t */
+#include <unistd.h> 		/* usleep(), access(), isatty(), getcwd() */
 #include <curses.h>		/* used in cantcontinue */
 #endif /* MAKEDEPEND_IGNORE */
 
@@ -43,18 +44,24 @@ extern unsigned long long int nbsteps;
 extern int count0, count1, count2, count3;
 extern bool stabilized_p ( void );
 extern void get_mass_from_snapshot (const char * path, long int * mass_var);
+extern void normalize_and_report ( void );
 
 /* collapse.c */
 extern int  curr_val (int x, int y);
 extern void init_board (int some_dim);
 extern void close_board ( void );
 extern void display_the_board (FILE * stream, bool withvars);
-extern void collapse (int x, int y);
-extern void goto_normal_form ( void );
+extern void collapse_and_report (int x, int y);
 extern void add_grains_on_origin (int delta);
 extern void add_grains_on_square (int x, int y, int delta);
 
 /* display.c */
+enum display_t { TERMINAL_MODE, CURSING_MODE, UNDERGROUND_MODE, UNDEF_DT=99 };
+extern enum display_t display_mode;
+
+extern bool curse_only_top_half;
+extern bool curse_only_right_half;
+extern bool curse_only_fitting;
 extern char char_for_val (int val);
 extern void init_cursing ( void );
 extern void terminate_cursing ( void );
@@ -75,13 +82,22 @@ extern void dump_current_memmatrix (FILE * stream);
 
 /* options.c */
 extern void process_calling_arguments (int argc, char *argv[]);
-extern void output_calling_options (FILE * f, const char * beg, const char * sep, const char * end);
+extern void fprintf_calling_opts (FILE * f, const char * beg, const char * sep, const char * end);
+
+/* random.c */
+#define MAX_ALLOWED_RANDOM_RADIUS 30 /* Otherwise can't see on terminal_mode */
+#define DEFAULT_RANDOM_RADIUS 3
+extern long int random_radius;
+extern void add_grain_on_random_square (int radius, int seed);
 
 /* report.c */
-extern FILE * report_file;
-extern void open_report_file ( void );
+extern void report_collapse ( void );
+extern void report_normal_form ( void );
 extern void record_normal_form (FILE * stream);
-extern void close_report_file (bool with_stats);
+extern FILE * record_file;
+extern void open_record_file ( void );
+extern void close_record_file (bool with_stats);
+extern char * jobname_string ( void );
 
 /* system.c */
 extern const char * machine_uname ( void );
@@ -95,14 +111,11 @@ extern time_t timer_start; /* starting point for snapshot_delay */
 
 /* MAIN */
 
-extern bool terminal_mode;
-extern bool cursing_mode;
-extern bool underground_mode;
 extern bool cheat_opt;
 extern bool with_data_file;
 extern bool from_snapshot_mode;
 
-enum job_t { PILE_JOB, SQUARE_JOB, DIAMOND_JOB, SPECIAL_JOB };
+enum job_t { PILE_JOB, SQUARE_JOB, DIAMOND_JOB, RANDOM_JOB, SPECIAL_JOB };
 #define DEFAULT_JOB PILE_JOB
 extern enum job_t selected_job;	/* user input */
 extern bool asymmetrical_job;
@@ -128,4 +141,4 @@ extern void display_initial_board ( void );
 extern void display_this_board ( void );
 
 /* cursing-smart fail message */
-#define cantcontinue(...) do{if(cursing_mode){prepare_cursing_message();printw(__VA_ARGS__);wait_in_cursing();terminate_cursing();}else{fprintf(stderr,__VA_ARGS__);}fail();}while(0)
+#define cantcontinue(...) do{if(display_mode == CURSING_MODE){prepare_cursing_message();printw(__VA_ARGS__);wait_in_cursing();terminate_cursing();}else{fprintf(stderr,__VA_ARGS__);}fail();}while(0)

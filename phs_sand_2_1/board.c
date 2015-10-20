@@ -10,7 +10,6 @@
 #include <regex.h>		/* regular expressions: regcomp() */
 #include <stdlib.h> 		/* alloc, malloc & free */
 #include <alloca.h> 		/* alloca */
-#include <unistd.h>             /* usleep() * access() */
 #include <curses.h>
 #include <stdio.h>
 #include <assert.h>
@@ -64,7 +63,7 @@ void display_board_vars (FILE * f)
 /* local functions: */
 extern void add_grains_on_square (int x, int y, int delta);
 extern void enlarge_envelop_for (int x, int y);
-extern void deal_with_normal_form ( void );
+extern void report_normal_form ( void );
 extern void init_board_contents_from_snapshot (const char * path, bool justheader);
 extern void get_res_filename_from_snapshot (const char * path);
 extern void init_waitlist ( void );
@@ -89,9 +88,6 @@ void init_board (int some_dim)
   add_grains_on_square(0,0,0);	/* set orig as "used" */
   if (from_snapshot_mode) {
     init_board_contents_from_snapshot (snapshot_source_file_arg, false);
-#ifdef TRACE
-    display_the_board (stdout, true);
-#endif /* TRACE */
   }
   if (anim_level > 0) display_initial_board ();
   TRACESIGNEDMESS ("xdim=%d ydim=%d", xdim, ydim);
@@ -242,13 +238,13 @@ void add_grains_on_square (int x, int y, int delta)
     break;
   }
 #ifdef TRACE
-  if ((terminal_mode != false) && (anim_level >= 2))
+  if ((display_mode != TERMINAL_MODE) && (anim_level >= 2))
     dump_waitinglist(stdout, false);
 #endif /* TRACE */
   TRACEOUT;
 }
 
-void collapse (int x, int y)
+void collapse_and_report (int x, int y)
 {
   assert (cboard[x*ydim+y] > 3);
   TRACEINW("(x=%d, y=%d)", x, y);
@@ -261,45 +257,51 @@ void collapse (int x, int y)
     cantcontinue("ERROR: Max number of steps UINTMAX = %llu reached. I must stop.\n", ULLONG_MAX);
   }
   nbsteps++;
+  report_collapse (); 
   TRACEOUT;
 }
 
-void goto_normal_form ( void )
+void normalize_and_report ( void )
 {
   TRACEIN;
   if (cheat_opt) goto skip_all;
 
   int x, y, val;
-  while (wait_curr > waitinglist) {
+  while (wait_curr > waitinglist) { /* MAIN LOOP: collapse until stable */
     assert (wait_curr >= waitinglist+2);
     y = *(--wait_curr);		/* pop y first, see pushing */
     x = *(--wait_curr);
     val = cboard[x*ydim+y];
-#ifdef TRACE
-    if ((terminal_mode != false) && (anim_level >= 2))
+#ifdef TRACE /* FIXME: used for debugging waitinglist. Will be removed later */
+    if ((display_mode != TERMINAL_MODE) && (anim_level >= 2))
       printf ("We popped B[%d,%d]=%d\n", x, y, val);
 #endif /* TRACE */
     if (val > 3) {
-      collapse(x,y);
-    } else if (terminal_mode) {
+      collapse_and_report(x,y);
+    } else if (display_mode == TERMINAL_MODE) {
       printf ("! False positive in waitinglist: x=%d y=%d val=%d\n",
 	      x, y, cboard[x*ydim+y]);
     }
   }
 #ifndef NDEBUG
   // FIXME: REMOVE LATER
-  // CHECK FOR SAFETY:
+  // SENSIBLE SAFETY CHECK FOR CATCHING BUGS, BUT COSTLY ON LARGE BOARDS
   bool finished = false;
   int count = 0;
+  int startx = 0;
+  int starty = 0;
+  if (asymmetrical_job) { startx = xmin; starty = ymin; }
   do {
     finished = true; /* tentatively */
-    for (x = xmin; x <= xmax; x++) {
-      for (y = xmin; y <= ymax; y++) {
+    for (x = startx; x <= xmax; x++) {
+      for (y = starty; y <= ymax; y++) {
 	if (cboard[x*ydim+y] > 3) {
 	  finished = false;
 	  count++;
 	  fprintf (stdout, "! Safety check has to collapse (%d,%d) val=%d\n", x, y, cboard[x*ydim+y]);
-	  collapse(x,y);
+	  collapse_and_report(x,y);
+	  if (! asymmetrical_job)
+	    cantcontinue("! FIXME: %s: SAFETY CHECK IS NOT COMPLETE ON SYMMETRICAL BOARDS", __func__);
 	}
       }
     }
@@ -312,7 +314,7 @@ void goto_normal_form ( void )
 #endif /* NDEBUG */
 
  skip_all:
-  deal_with_normal_form ();
+  report_normal_form ();
   TRACEOUT;
 }
 
@@ -356,7 +358,7 @@ void enlarge_envelop_for (int x, int y)
   dump_current_memmatrix (stdout);
   display_the_board (stdout, true);
 #endif /* DEBUG_BINARY_BOARD */
-  if (cursing_mode) {
+  if (display_mode == CURSING_MODE) {
     display_cursing_dims ();
   }
   TRACEOUT;

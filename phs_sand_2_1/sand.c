@@ -4,20 +4,22 @@
 #include <errno.h>
 #include <stdlib.h> 		/* daemon, alloc & free */
 #include <alloca.h> 		/* alloca */
-#include <unistd.h>             /* usleep() */
 #include <time.h>		/* time() */
 #include <stdio.h>
 #include <assert.h>
 #endif /* MAKEDEPEND_IGNORE */
+
+//#define TRACE
 
 #include "sand.h"
 #include "version.h"
 
 /* local vars: */
 
-bool terminal_mode = true;	/* default mode */
-bool cursing_mode = false;
-bool underground_mode = false;
+//bool terminal_mode = true;	/* default mode */
+//bool cursing_mode = false;
+//bool underground_mode = false;
+enum display_t display_mode = UNDEF_DT;
 bool cheat_opt = false;
 bool with_data_file = true;
 bool from_snapshot_mode = false;
@@ -77,11 +79,14 @@ void set_value_for_max_dim (int x)
 void take_snapshot ( void )
 {
   TRACEIN;
+  char * jobname = jobname_string();
+  assert(jobname);
   char * buff = alloca(150);
   if (errno == ENOMEM) cantcontinue("ERROR: %s can't alloc for string buff.\n", __func__);
   assert (buff);
   /* snapshot filename and contents do not depend on selected_job */
-  sprintf (buff, "snapshot_sand_v%s_M%d.txt", SANDPILE_VERSION, mass);
+  sprintf (buff, "snapshot_sand_v%s_%s_M%d.txt", SANDPILE_VERSION, jobname, mass);
+  TRACEMESS("Will now open file \"%s\"", buff);
   FILE * f = fopen(buff, "w");
   if (f == NULL)
     cantcontinue("ERROR: %s: Could not open file %s.\n", __func__, buff);
@@ -93,42 +98,10 @@ void take_snapshot ( void )
   TRACEOUT;
 }
 
-void deal_with_normal_form ( void )
-{
-  TRACEINW(": mass=%d", mass);
-#ifdef DEBUG_BINARY_BOARD
-  dump_current_memmatrix (stdout);
-#endif /* DEBUG_BINARY_BOARD */
-  assert (asymmetrical_job || xmax - xmin == diam - 1);
-  assert (asymmetrical_job || ymax - ymin == diam - 1);
-  assert (asymmetrical_job || xmin + xmax == 0);
-  assert (asymmetrical_job || ymin + ymax == 0);
-  if (cheat_opt == false) assert (stabilized_p());
-  assert ( (stabilized_p() == false) || (mass == count1 + 2 * count2 + 3 * count3) );
-  assert ( (stabilized_p() == false) || (area == count0 + count1 + count2 + count3) );
-  static int prev_area = -1;
-  switch (selected_report) {
-  case NEW_MASS:
-    record_normal_form (report_file);	       /* on -o file */
-    if (anim_level > 0) display_this_board (); /* and on screen */
-    break;
-  case NEW_AREA:
-    if (area > prev_area) {
-      record_normal_form (report_file);		 /* on -o file */
-      if (anim_level > 0) display_this_board (); /* and on screen */
-    }
-    break;
-  default:
-    cantcontinue("ERROR: %s: Unknown selected_report = %d.\n", __func__, selected_report);
-  }
-  prev_area = area;
-  TRACEOUT;
-}
-
 void display_initial_board ( void )
 {
   TRACEIN;
-  if (cursing_mode) {
+  if (display_mode == CURSING_MODE) {
     display_cursing_dims ();
   }
   display_this_board ();
@@ -138,7 +111,7 @@ void display_initial_board ( void )
 void display_this_board ( void )
 {
   TRACEIN;
-  if (cursing_mode) {
+  if (display_mode == CURSING_MODE) {
     display_cursing_board ();
     //FIXME: no display delay in interactive mode
     if (mass < 200) {
@@ -154,10 +127,10 @@ void display_this_board ( void )
 
 void config_for_underground ( void )
 {
-  if (report_file == NULL) {
-    cantcontinue("Can't run underground: no report file?!\n");
+  if (record_file == NULL) {
+    cantcontinue("Can't run underground: no record file?!\n");
   }
-  stdout = stderr = report_file; /* we dont want to lose any output */
+  stdout = stderr = record_file; /* we dont want to lose any output */
   if (daemon(1,0) != 0) {
     cantcontinue("daemon(1,0) failed. Can't run underground.\n");
   }
@@ -170,34 +143,47 @@ int main (int argc, char *argv[])
 
   set_value_for_height(DEFAULT_HEIGHT); /* default */
   set_value_for_max_dim(DEFAULT_MAX_DIM);    /* default */
+  display_mode = TERMINAL_MODE;		     /* default */
   process_calling_arguments(argc,argv);
 
 #ifdef TRACE
-  if (cursing_mode) {
+  if (display_mode == CURSING_MODE) {
     fprintf (stderr, "Cannot use cursing_mode when compiled with -DTRACE.\n");
     fprintf (stderr, "I disable it.\n");
-    cursing_mode = false;
-    TRACEWAITFORCHAR;
+    display_mode = TERMINAL_MODE;
+    if (isatty(fileno(stdout))) { /* message PRESS ENTER on stdout */
+      TRACEWAITFORCHAR;
+    }
   }
 #endif /* TRACE */
-  if (cursing_mode)
+  if (display_mode == CURSING_MODE)
     init_cursing();
 
   if (with_data_file)
-    open_report_file ();
+    open_record_file ();
 
-  if (underground_mode)  /* underground after open_report_file */
+  if (display_mode == UNDERGROUND_MODE)  /* underground after open_record_file */
     config_for_underground ();
 
   init_board (DEFAULT_INIT_DIM);
 
   int i=0;
-  int sqmass, j, k;
+  int sqmass, j, k, radius;
+
   switch(selected_job) {
   case PILE_JOB:
     while (mass < max_height) {
       add_grains_on_origin(1);
-      goto_normal_form();
+      normalize_and_report();
+    }
+    break;
+  case RANDOM_JOB:
+    asymmetrical_job = true;	/* defuse asserts written for piles etc. */
+    radius = (random_radius >= INT_MAX ? INT_MAX : (int)random_radius);
+    while (mass < max_height) {
+      TRACEMESS("Current M=%d", mass);
+      add_grain_on_random_square(radius, mass); /* use mass as random seed */
+      normalize_and_report();
     }
     break;
   case SQUARE_JOB:
@@ -222,7 +208,7 @@ int main (int argc, char *argv[])
 	assert(mass == nb_toppling_grains+3*(2*i+1)*(2*i+1));
 	sqmass=mass;
       }
-      goto_normal_form();
+      normalize_and_report();
     }
     break;
   case DIAMOND_JOB:
@@ -247,7 +233,7 @@ int main (int argc, char *argv[])
 	assert(mass == nb_toppling_grains+3*(2*i*i+2*i+1));
 	sqmass=mass;
       }
-      goto_normal_form();
+      normalize_and_report();
     }
     break;
   case SPECIAL_JOB:
@@ -259,7 +245,7 @@ int main (int argc, char *argv[])
 	for (j = i; j <= 1; j++)
 	  add_grains_on_square(i,j,1);
       //REMOVE: display_the_board(stdout, true);
-      goto_normal_form();
+      normalize_and_report();
     }
     break;
   default:
@@ -269,8 +255,8 @@ int main (int argc, char *argv[])
   close_board ();
 
   if (with_data_file)
-    close_report_file (true);
-  if (cursing_mode) {
+    close_record_file (true);
+  if (display_mode == CURSING_MODE) {
     wait_in_cursing();
     terminate_cursing();
   }

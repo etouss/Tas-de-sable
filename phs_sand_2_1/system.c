@@ -6,7 +6,6 @@
 #ifndef MAKEDEPEND_IGNORE
 #include <print.h> /* before stdbool.h can be included */
 
-#include <unistd.h>		/* getcwd() */
 #include <sys/utsname.h>	/* uname() */
 #include <sys/param.h>	        /* MAXPATHLEN() */
 #include <assert.h>

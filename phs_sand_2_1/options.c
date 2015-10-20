@@ -41,15 +41,15 @@ void parse_ofile_arg (char * arg)
 
 #define _std_sand_name_ 	"sand"
 #define _std_version_message_ 	"%s version %s\n"
-#define sand_optstring 		"hvj:ugn:s:f:t:d:"
+#define sand_optstring 		"hvj:ugGn:s:f:t:d:RT"
 #define _std_help_message_ 	"\
 Usage: %s [-n <num>] ..\n\
 \t-h : display this help message\n\
 \t-v : display version and exit\n\
 \t-j <jobname> : select job among { pile (= default), squareNNN, diamondNNN }\n\
 \t\tNumeric option NNN is number of extra grains (default = 1)\n\
-\t-u : underground mode, only output to logfile\n\
-\t-g : turn on graphical mode\n\
+\t-u : underground mode, only output to record file\n\
+\t-[gG] : uses curses for displaying boards and info (-G : don't limit to terminal bounds)\n\
 \t-n <num> : set value for max mass (default = %d)\n\
 \t-s <num> : take a snapshot every <num> seconds (default = don't)\n\
 \t-f <filename> : start from given snapshot\n\
@@ -58,7 +58,7 @@ Usage: %s [-n <num>] ..\n\
 "
 // NOT YET IMPLEMENTED:
 //\t-i : turn on interactive mode
-//\t-o <filename> : output summary in file
+//\t-o <filename> : choose name for report file
 
 
 /* parsing arguments */
@@ -66,7 +66,7 @@ Usage: %s [-n <num>] ..\n\
 static int argc = 0;
 static char * * argv = NULL;
 
-void output_calling_options (FILE * f, const char * beg, const char * sep, const char * end)
+void fprintf_calling_opts (FILE * f, const char * beg, const char * sep, const char * end)
 {
   int i;
   fputs (beg, f);
@@ -89,8 +89,18 @@ void parse_options (int actual_argc, char *actual_argv[])
   while ((op = getopt(argc, argv, sand_fulloptsstring)) != -1) {
     switch (op) {
     case 'D': cheat_opt = true; break;
+    case 'R': curse_only_right_half = true; break;
+    case 'T': curse_only_top_half = true; break;
     case 'g':
-      graphical_opt = true; break;
+      graphical_opt = true;
+      curse_only_fitting = true; /* default, but needed to handle -G -g */
+      if (anim_level == 0) set_value_for_anim_level(1); /* -g implies -t */
+      break;
+    case 'G':
+      graphical_opt = true;
+      curse_only_fitting = false;
+      if (anim_level == 0) set_value_for_anim_level(1); /* -G implies -t */
+      break;
     case 'h':
       display_help_opt = true; break;
     case 'i':
@@ -120,6 +130,14 @@ void parse_options (int actual_argc, char *actual_argv[])
 	  read_longint_val_in_range(optarg+7, &nb_toppling_grains, 0, MAX_ALLOWED_TOPPLING, "nb_toppling_grains");
 	}
 	TRACEMESS("optarg \"%s\" gives nb_toppling = %ld.", optarg, nb_toppling_grains);
+      } else if (strncmp(optarg, "random", 6) == 0) {
+	selected_job = RANDOM_JOB;
+	if (optarg[6] == '\0') {
+	  random_radius = DEFAULT_RANDOM_RADIUS;
+	} else {
+	  read_longint_val_in_range(optarg+6, &random_radius, 0, MAX_ALLOWED_RANDOM_RADIUS, "random_radius");
+	}
+	TRACEMESS("optarg \"%s\" gives random_radius = %ld.", optarg, random_radius);
       } else if (strncmp(optarg, "special", 7) == 0) {
 	selected_job = SPECIAL_JOB;
 	if (optarg[7] != '\0') {
@@ -130,7 +148,7 @@ void parse_options (int actual_argc, char *actual_argv[])
 	cantcontinue ("Option \"-j %s\" not understood.\n", optarg);
       }
       break;
-    case 'o': /* expects path for output file */
+    case 'o': /* expects path for record file */
       assert(optarg);
       printf ("option -o not yet implemented\n");
       //parse_ofile_arg (optarg);
@@ -243,19 +261,17 @@ void process_calling_arguments (int argc, char *argv[])
   /* After we have parsed the optional arguments, we set the right flags accordingly. This is the place where
      we do sanity checks *before* launching the actual computations. */
 
-  if (display_version_opt) display_version (stdout);
+  if (display_version_opt || display_help_opt) display_version (stdout);
   if (display_help_opt) display_help (stdout);
-
   if (display_help_opt || display_version_opt) {
     TRACEOUT;
     exit (EXIT_SUCCESS);	/* exits on -h and -l */
   }
   if (graphical_opt) {
     if (underground_opt) {
-      cantcontinue("Graphical -g and underground -u modes incompatible.\n");
+      cantcontinue("Graphical -[gG] and underground -u modes incompatible.\n");
     } else {
-      cursing_mode = true;
-      terminal_mode = underground_mode = false;
+      display_mode = CURSING_MODE;
     }
   }
   if (underground_opt) {
@@ -267,8 +283,7 @@ void process_calling_arguments (int argc, char *argv[])
 	cantcontinue("Underground -u mode on machine %s required being in dir %s.\n", SERVER_UNAME, REQUIRED_DIR_ON_SERVER);
       }
     }
-    underground_mode = true;
-    terminal_mode = cursing_mode = false;
+    display_mode = UNDERGROUND_MODE;
   } /* underground_mode */
   TRACEOUT;
 }
