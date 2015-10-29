@@ -31,8 +31,9 @@ int anim_level = 0;		/* user input */
 int max_height = 0;		/* user input */
 int max_dim = 0;		/* user input */
 long int nb_toppling_grains = 0; /* for SQUARE, DIAMOND, .. */
-long int sp_job_number = 0;	 /* for SPECIAL */
-bool asymmetrical_job = false;	 /* by default */
+long int base_thickness = 0;	/* for SQUARE, DIAMOND, .. */
+long int sp_job_number = 0;	/* for SPECIAL */
+bool asymmetrical_job = false;	/* by default */
 
 bool okij (int i, int j) /* useful in debugging */
 {
@@ -113,12 +114,6 @@ void display_this_board ( void )
   TRACEIN;
   if (display_mode == CURSING_MODE) {
     display_cursing_board ();
-    //FIXME: no display delay in interactive mode
-    if (mass < 200) {
-      usleep(DELAYAFTERDISPLAY);
-    } else {			 /* delays add up in the long run */
-      usleep(DELAYAFTERDISPLAY * 200 / mass); /* decreasing delay */
-    }
   } else {
     display_the_board(stdout, false);
   }
@@ -162,15 +157,20 @@ int main (int argc, char *argv[])
   if (with_data_file)
     open_record_file ();
 
-  if (display_mode == UNDERGROUND_MODE)  /* underground after open_record_file */
-    config_for_underground ();
+  if (display_mode == UNDERGROUND_MODE)  /* config_for_underground */
+    config_for_underground ();		 /* AFTER open_record_file */
 
-  init_board (DEFAULT_INIT_DIM);
+  init_and_report_board (DEFAULT_INIT_DIM);
 
   int i=0;
   int sqmass, j, k, radius;
 
   switch(selected_job) {
+  case CONJ_JOB:			/* like PILE but extra record */
+    if (from_snapshot_mode) {
+      cantcontinue("Can't do -f when recording N[i,j]\n");
+    }
+    /* branch into PILE_JOB */
   case PILE_JOB:
     while (mass < max_height) {
       add_grains_on_origin(1);
@@ -189,23 +189,24 @@ int main (int argc, char *argv[])
   case SQUARE_JOB:
     sqmass = 0;
     i = -1;
+    assert (base_thickness >= 0 && nb_toppling_grains >= 0);
     for (k = 0; k < nb_toppling_grains; k++)
       add_grains_on_origin(1);
     sqmass = nb_toppling_grains;
     while (sqmass < max_height) {
       if (i++ == -1) {		/* base case */
-	for (k = 0; k < 3; k++) add_grains_on_origin(1);
-	assert(mass == 3+nb_toppling_grains);
-	//REMOVE	display_the_board(stdout, true);
+	for (k = 0; k < base_thickness; k++) add_grains_on_origin(1);
+	assert(mass == base_thickness+nb_toppling_grains);
       } else {		/* inductive step */
 	for (j = -i; j < i; j++) {
-	  for (k = 0; k < 3; k++) add_grains_on_square(i, j, 1);
-	  for (k = 0; k < 3; k++) add_grains_on_square(j, -i, 1);
-	  for (k = 0; k < 3; k++) add_grains_on_square(-i, -j, 1);
-	  for (k = 0; k < 3; k++) add_grains_on_square(-j, i, 1);
+	  for (k = 0; k < base_thickness; k++) {
+	    add_grains_on_square(i, j, 1);
+	    add_grains_on_square(j, -i, 1);
+	    add_grains_on_square(-i, -j, 1);
+	    add_grains_on_square(-j, i, 1);
+	  }
 	}
-	//REMOVE	display_the_board(stdout, true);
-	assert(mass == nb_toppling_grains+3*(2*i+1)*(2*i+1));
+	assert(mass == nb_toppling_grains+base_thickness*(2*i+1)*(2*i+1));
 	sqmass=mass;
       }
       normalize_and_report();
@@ -214,23 +215,24 @@ int main (int argc, char *argv[])
   case DIAMOND_JOB:
     sqmass = 0;
     i = -1;
+    assert (base_thickness >= 0 && nb_toppling_grains >= 0);
     for (k = 0; k < nb_toppling_grains; k++)
       add_grains_on_origin(1);
     sqmass = nb_toppling_grains;
     while (sqmass < max_height) {
       if (i++ == -1) {		/* base case */
-	for (k = 0; k < 3; k++) add_grains_on_origin(1);
-	assert(mass == 3+nb_toppling_grains);
-	//REMOVE: display_the_board(stdout, true);
+	for (k = 0; k < base_thickness; k++) add_grains_on_origin(1);
+	assert(mass == base_thickness+nb_toppling_grains);
       } else {		/* inductive step */
 	for (j = 0; j < i; j++) {
-	  for (k = 0; k < 3; k++) add_grains_on_square(i-j, j, 1);
-	  for (k = 0; k < 3; k++) add_grains_on_square(-j, i-j, 1);
-	  for (k = 0; k < 3; k++) add_grains_on_square(j-i, -j, 1);
-	  for (k = 0; k < 3; k++) add_grains_on_square(j, j-i, 1);
+	  for (k = 0; k < base_thickness; k++) {
+	    add_grains_on_square(i-j, j, 1);
+	    add_grains_on_square(-j, i-j, 1);
+	    add_grains_on_square(j-i, -j, 1);
+	    add_grains_on_square(j, j-i, 1);
+	  }
 	}
-	//REMOVE: display_the_board(stdout, true);
-	assert(mass == nb_toppling_grains+3*(2*i*i+2*i+1));
+	assert(mass == nb_toppling_grains+base_thickness*(2*i*i+2*i+1));
 	sqmass=mass;
       }
       normalize_and_report();
@@ -244,7 +246,6 @@ int main (int argc, char *argv[])
       for (i = -1; i <= 1; i++)
 	for (j = i; j <= 1; j++)
 	  add_grains_on_square(i,j,1);
-      //REMOVE: display_the_board(stdout, true);
       normalize_and_report();
     }
     break;
@@ -255,9 +256,9 @@ int main (int argc, char *argv[])
   close_board ();
 
   if (with_data_file)
-    close_record_file (true);
+    close_record_file(true);
   if (display_mode == CURSING_MODE) {
-    wait_in_cursing();
+    wait_in_cursing(false);
     terminate_cursing();
   }
   exit (EXIT_SUCCESS);		/* end of program */

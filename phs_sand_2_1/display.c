@@ -23,7 +23,7 @@ static int terminal_max_x = 0;
 static int terminal_max_y = 0;
 
 /* local functions: */
-extern void paint_blank_screen ( void );
+extern void paint_blank_screen ( void ); /* erase everything (after screen resize) */
 
 /* Get/update terminal X/Y dims for cursing */
 void get_stdscr_size ( void )
@@ -34,17 +34,16 @@ void get_stdscr_size ( void )
   terminal_max_y = getmaxy (stdscr); /* initialize term dims */
   if (terminal_max_x < 40) {
     terminate_cursing();
-    fprintf(stderr, "Your terminal is too small (< 40 cols).\n");
-    fail();
-  }
-  if (terminal_max_y < 10) {
+    cantcontinue("Your terminal is too small (< 40 cols).\n");
+  } else if (terminal_max_y < 10) {
     terminate_cursing();
-    fprintf(stderr, "Your terminal is too small (< 10 lines).\n");
-    fail();
+    cantcontinue("Your terminal is too small (< 10 lines).\n");
   }
   if (terminal_max_x != prev_term_max_x || terminal_max_y != prev_term_max_y) {
-    if (prev_term_max_x >= 0 || prev_term_max_y >= 0) /* dims changed after init */
-      paint_blank_screen ();
+    if (prev_term_max_x >= 0 || prev_term_max_y >= 0) { /* dims changed after init */
+      paint_blank_screen();
+      display_cursing_dims();	/* these are only updated after change */
+    }
     prev_term_max_x = terminal_max_x; prev_term_max_y = terminal_max_y;
   }
 }
@@ -55,6 +54,8 @@ void get_stdscr_size ( void )
 #define COLPAIR3VAL    4  	/* color for 3 */
 #define COLPAIR4VAL    5  	/* color for 4 */
 #define COLPAIR5VAL    6  	/* color for 5 and above */
+#define COLPAIR4ODDLIM 4
+#define COLPAIR4EVENLIM 3
 
 /* new names for the new colors */
 #define BLUE1 COLOR_CYAN /* will be redefined hence renamed */
@@ -84,29 +85,53 @@ void set_display_ends ( void )
 
 void display_cursing_board ( void )
 {
+  TRACEIN;
   int x, y, val;
   chtype ch;
   /* init chars */
-  chtype corner = '+' | COLOR_PAIR(COLPAIR4TEXT) | A_BOLD; /*FIXME: compute once */
-  chtype top = '-' | COLOR_PAIR(COLPAIR4TEXT) | A_BOLD;
-  chtype bot = curse_only_top_half
-    ? (bot = '-' | COLOR_PAIR(COLPAIR4TEXT))  /* no bold */
-    : top;
-  chtype right = '|' | COLOR_PAIR(COLPAIR4TEXT) | A_BOLD;
-  chtype left = curse_only_right_half
-    ? (':' | COLOR_PAIR(COLPAIR4TEXT)) /* no bold */
-    : right;
+  static chtype CP_EVENLIM = COLOR_PAIR(COLPAIR4EVENLIM);
+  static chtype CP_ODDLIM  = COLOR_PAIR(COLPAIR4ODDLIM);
+  static chtype corner  = '+' | COLOR_PAIR(COLPAIR4TEXT)    | A_BOLD;
+  static chtype topzero = '+' | COLOR_PAIR(COLPAIR4EVENLIM) | A_BOLD;
+  static chtype topodd  = '-' | COLOR_PAIR(COLPAIR4ODDLIM)  | A_BOLD;
+  static chtype topeven = '-' | COLOR_PAIR(COLPAIR4EVENLIM) | A_BOLD;
+  chtype botzero = curse_only_top_half
+    ? ('+' | CP_EVENLIM)  /* no bold */
+    : topzero;
+  chtype botodd = curse_only_top_half
+    ? ('-' | CP_ODDLIM)  /* no bold */
+    : topodd;
+  chtype boteven = curse_only_top_half
+    ? ('-' | CP_EVENLIM)  /* no bold */
+    : topeven;
+  static chtype rightzero = '+' | COLOR_PAIR(COLPAIR4EVENLIM) | A_BOLD;
+  static chtype rightodd  = '|' | COLOR_PAIR(COLPAIR4ODDLIM)  | A_BOLD;
+  static chtype righteven = '|' | COLOR_PAIR(COLPAIR4EVENLIM) | A_BOLD;
+  chtype leftzero = curse_only_right_half
+    ? ('+' | CP_EVENLIM) /* no bold */
+    : rightzero;
+  chtype leftodd = curse_only_right_half
+    ? (':' | CP_ODDLIM) /* no bold */
+    : rightodd;
+  chtype lefteven = curse_only_right_half
+    ? (':' | CP_EVENLIM) /* no bold */
+    : righteven;
   /* init dims */
   get_stdscr_size();    /* (re)initialize term dims */
-  set_display_ends ();
-  /* draw */
-  bool skipright = false, skiptop = false;
+  set_display_ends(); /* update {beg,end}{x,y}: subarray that will be printed */
+  /* check and update end{x,y} */
+  int  nbrightcolsmissing = 0;	/* if cant fit */
+  bool skipright = false;	/* if cant fit */
+  bool skiptop = false;		/* if cant fit */
+  bool skipleftlim = false; 	/* if slide trick */
   if (endx > terminal_max_x + begx - 3 - BOARDXOFFSET) {
     if (curse_only_fitting) {
       cantcontinue("Now need more than %d cols on your terminal.\n", terminal_max_x);
     } else {
       skipright = true;
-      endx = terminal_max_x + begx - 2 - BOARDXOFFSET; /* new end col */
+      x = terminal_max_x + begx - 2 - BOARDXOFFSET; /* new end col */
+      nbrightcolsmissing = endx - x;
+      endx = x;
     }
   }
   if (endy > terminal_max_y + begy - 3 - BOARDYOFFSET) {
@@ -115,22 +140,46 @@ void display_cursing_board ( void )
     } else {
       skiptop = true;
       endy = terminal_max_y + begy - 2  - BOARDYOFFSET; /* new end line */
+      /* SLIDE TRICK IN PILE_JOB: if only draw negative lines (below horizon)
+	 one may sometimes scrap some left columns that are only empty anyway */
+      if (endy < 0 && curr_val(begx, endy) == UNUSEDSQ
+	  && selected_job == PILE_JOB
+	  && nbrightcolsmissing != 0
+	  && !curse_only_right_half) {
+	skipleftlim = true;
+	for (x = begx; x <= endx; x++)
+	  if (curr_val(x, endy) != UNUSEDSQ
+	      || x - begx == nbrightcolsmissing) { /* find start colum */
+	    endx += x - begx;
+	    begx = x;
+	    break;
+	  }
+      }
     }
   }
+  /* NOW DRAW */
   /* draw bottom frame line: */
-  move (terminal_max_y - 1, BOARDXOFFSET);
-  addch(corner);
+  move(terminal_max_y - 1, BOARDXOFFSET);
+  addch(curse_only_right_half || curse_only_top_half || skipleftlim ? ' ' : corner);
   for (x = begx; x <= endx; x++)
     if ( ! curse_only_top_half || ((x-begx)%2 == 0) ) { /* every other one */
-      addch(bot);
+      if (x)
+	addch(x%2 ? botodd : boteven);
+      else
+	addch(botzero);
     } else {
       addch (' ');
     }
-  if (! skipright) addch(corner);
+  if (! skipright && ! curse_only_top_half) addch(corner);
   /* draw lines */
   for (y = begy; y <= endy; y++) {
     move (terminal_max_y - 2 + begy - y, BOARDXOFFSET);
-    addch(left);
+    if (skipleftlim)
+      addch(' ');
+    else if (y)
+      addch(y % 2 ? leftodd : lefteven);
+    else
+      addch(leftzero);
     for (x = begx; x <= endx; x++) {
       val = curr_val(x,y);
       ch = char_for_val(val);
@@ -143,18 +192,29 @@ void display_cursing_board ( void )
       }
       addch(ch);
     }
-    if (! skipright) addch(right);
+    if (! skipright) {
+      if (y)
+	addch(y % 2 ? rightodd : righteven);
+      else
+	addch(rightzero);
+    }
   }
 
   /* draw top frame line */
   if (! skiptop) {
     move (terminal_max_y - 2 + begy - y, BOARDXOFFSET);
-    addch(corner);
-    for (x = begx; x <= endx; x++) addch(top);
+    addch(curse_only_right_half || skipleftlim ? ' ' : corner);
+    for (x = begx; x <= endx; x++) {
+      if (x)
+	addch(x % 2 ? topodd : topeven);
+      else
+	addch(topzero);
+    }
     if (! skipright) addch(corner);
   }
 
   refresh ();
+  TRACEOUT;
 }
 
 void init_colored_cursing ()
@@ -204,7 +264,7 @@ void test_cursing_background (bool wait)
     mvprintw(i, 0, "#");
     mvprintw(i, terminal_max_x - 1, "#");
   }
-  if (wait) wait_in_cursing();
+  if (wait) wait_in_cursing(true);
 }
 
 void paint_blank_screen ( void )
@@ -254,7 +314,7 @@ void prepare_cursing_message ( void )
   move(2,0);
 }
 
-void wait_in_cursing ( void )
+void wait_in_cursing (bool on_bottom_line)
 {
   int line4mess, prev_curs, x, y;
   set_display_ends ();
@@ -265,7 +325,9 @@ void wait_in_cursing ( void )
     fail();
   }
   terminal_max_y = getmaxy (stdscr);    /* (re)initialize term dims */
-  line4mess = terminal_max_y - 1;
+  line4mess = on_bottom_line
+    ? terminal_max_y - 1	/* bottom line on curse screen */
+    : terminal_max_y - 4 - (endy - begy); /* line above board */
 
   attron(COLOR_PAIR(COLPAIR4TEXT));
   mvprintw(line4mess, 0, "Hit a key...");

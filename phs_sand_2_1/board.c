@@ -46,6 +46,9 @@ int count3 = 0;			/* number of squares that contain 3 */
 int area = 0;			/* number of used squares */
 unsigned long long int nbsteps = 0;
 
+/* N_ARRAY is used when testing CONJ1 on N[i,j] vals */
+unsigned long int * N_array = NULL;
+
 void display_board_vars (FILE * f)
 {
   fprintf(f, "Underlying memmat:\n");
@@ -63,13 +66,13 @@ void display_board_vars (FILE * f)
 /* local functions: */
 extern void add_grains_on_square (int x, int y, int delta);
 extern void enlarge_envelop_for (int x, int y);
-extern void report_normal_form ( void );
+extern void report_normal_form (bool initial_board);
 extern void init_board_contents_from_snapshot (const char * path, bool justheader);
 extern void get_res_filename_from_snapshot (const char * path);
 extern void init_waitlist ( void );
 extern void dump_waitinglist (FILE * stream, bool statstoo);
 
-void init_board (int some_dim)
+void init_and_report_board (int some_dim)
 {
   TRACEIN;
   assert (cboard == NULL);
@@ -85,13 +88,90 @@ void init_board (int some_dim)
   cboard = memmatrix(xdepl,ydepl);
   mass = 0; nbsteps = 0; count1 = count2 = count3 = 0;
   area = count0 = 0;		/* init count0 */
-  add_grains_on_square(0,0,0);	/* set orig as "used" */
+ //unneeded?? add_grains_on_square(0,0,0);	/* set orig as "used" */
   if (from_snapshot_mode) {
     init_board_contents_from_snapshot (snapshot_source_file_arg, false);
   }
-  if (anim_level > 0) display_initial_board ();
+  if (selected_job == CONJ_JOB) { /* init N_array for CONJ */
+    if (max_height > MAX_ALLOWED_HEIGHT_FOR_CONJ_TEST) {
+      cantcontinue("Can't handle n>%lu when recording N[i,j]\n", (long int)MAX_ALLOWED_HEIGHT_FOR_CONJ_TEST);
+    }
+    if (N_array == NULL) {
+      long int i, nnn = N_ARRAY_DIM*N_ARRAY_DIM;
+      assert(nnn * sizeof(long int) <= 2*M1);
+      N_array = calloc(nnn, sizeof(long int));
+      if (errno == ENOMEM) cantcontinue("Out of memory. %s can't alloc N_array.\n", __func__);
+      for (i = 0; i < nnn; i++) N_array[i]=0; /* init */
+    }
+  }
+  report_normal_form(true);
   TRACESIGNEDMESS ("xdim=%d ydim=%d", xdim, ydim);
   TRACEOUT;
+}
+
+bool check_and_report_N_array ( void )
+{
+  TRACEINW(": mass=%d xmax=%d ymax=%d", mass, xmax, ymax);
+  int x, y;
+  bool pass = true;
+  long int v, vx, vy;
+  assert (N_array);
+  /* check */
+  for (y = 0; y < ymax; y++) { /*  */
+    for (x = 0; x < xmax; x++) {
+      v = N_array[y + x*N_ARRAY_DIM];
+      vx = N_array[y + (x+1)*N_ARRAY_DIM];
+      vy = N_array[y + 1 + x*N_ARRAY_DIM];
+      TRACEMESS("x=%d y=%d v=%ld vx=%ld vy=%ld", x, y, v, vx, vy);
+      if
+#if defined(CONJ_N_FORM1)
+	(v < vx || (v = vx && v > 0))
+#elif defined(CONJ_N_FORM2)
+	(v < vx || (v = vx && v > 0 && cboard[x*ydim+y] <= cboard[(x+1)*ydim+y]))
+#elif defined(CONJ_N_FORM3)
+	  (v < vx)
+#else
+#error neither CONJ_N_FORM1, CONJ_N_FORM2 nor CONJ_N_FORM3 defined
+#endif
+	  {
+	    pass = false;
+	    printf ("! Conjecture N_array fails: N[%d,%d]=%ld N[%d,%d]=%ld\n", x, y, v, x+1, y, vx);
+	  }
+      if
+#if defined(CONJ_N_FORM1)
+	(v < vy || (v = vy && v > 0))
+#elif defined(CONJ_N_FORM2)
+	(v < vy || (v = vy && v > 0 && cboard[x*ydim+y] <= cboard[x*ydim+y+1]))
+#elif defined(CONJ_N_FORM3)
+	  (v < vy)
+#else
+#error neither CONJ_N_FORM1, CONJ_N_FORM2 nor CONJ_N_FORM3 defined
+#endif
+	  {
+	    pass = false;
+	    printf ("! Conjecture N_array fails: N[%d,%d]=%ld N[%d,%d]=%ld\n", x, y, v, x, y+1, vy);
+	  }
+    }
+  }
+  /* report */
+  assert(record_file);
+  if (pass) {			/* TEST PASSED */
+    if (anim_level > 0) {	/* on screen */
+      printf ("! Test N[i,j] passed for M=%d\n", mass);
+    }
+    fprintf(record_file, "N[i,j] passed for M=%d\n", mass);
+  } else {			/* TEST FAILED */
+    printf ("! Test N[i,j] failed for M=%d\n", mass);
+    fprintf(record_file, "N[i,j] failed for M=%d\n", mass);
+    for (y = ymax - 1; y >= 0; y--) {
+      for (x = 0; x < xmax; x++) {
+	long int val = N_array[y + x*N_ARRAY_DIM];
+	fprintf(record_file, "N[%d,%d]=%ld\n", x, y, val);
+      }
+    }
+  }
+  TRACEOUT;
+  return pass;
 }
 
 /* blindly double all dimensions */
@@ -114,6 +194,7 @@ void enlarge_underlying_mat ( void )
   TRACEOUTW ("was %dx%d, now is %dx%d", prev_xdim, prev_ydim, memmatrix_xdim(), memmatrix_ydim());
 }
 
+
 /* THE LOGICAL BOARD is an infinite board but only points "in range", i.e. between xmin..xmax and ymin..ymax can be touched.
 
    NOTE: Collapsing at extremal positions may enlarge the range.
@@ -123,6 +204,7 @@ void enlarge_underlying_mat ( void )
    The physical and the logical boards are connected via
    B[x,y] ~ ph_board[(x+xdepl)*ydim + y+ydepl]
 */
+
 /* outside modules can only use CURR_VAL to read the board. */
 int curr_val (int x, int y)
 {
@@ -131,6 +213,7 @@ int curr_val (int x, int y)
   assert (cboard);		/* inited */
   return cboard[x*ydim + y];
 }
+
 
 /* while collapsing we have a waiting list of squares to process */
 static bool waitlist_inited = false;
@@ -141,6 +224,7 @@ static int * wait_max = NULL;
 #define STARTING_STACK_SIZE ((size_t)1000) /* suitable for non-challenging runs */
 /* #define MAX_STACK_SIZE ((size_t)5*K10) : Crashes for M=6257180 */
 #define MAX_STACK_SIZE ((size_t)M1) /* 10^6 */
+
 void alloc_waitlist (size_t nbslots)
 {
   TRACEINW("(%zu)", nbslots);
@@ -248,6 +332,16 @@ void collapse_and_report (int x, int y)
 {
   assert (cboard[x*ydim+y] > 3);
   TRACEINW("(x=%d, y=%d)", x, y);
+  if (selected_job == CONJ_JOB) {
+    if (x >= 0 && y >= 0) {	/* count only maintained in 1 quadrant  */
+      assert(N_array);
+      if (x >= N_ARRAY_DIM || y >= N_ARRAY_DIM) {
+	cantcontinue("%s: limit N_ARRAY_DIM = %d reached with M=%d at step %llu.\n",
+		     __func__, N_ARRAY_DIM, mass, nbsteps);
+      }
+      N_array[y + x*N_ARRAY_DIM]++;
+    }
+  }
   add_grains_on_square (x,y,-4);
   add_grains_on_square (x+1,y,1);
   add_grains_on_square (x-1,y,1);
@@ -257,8 +351,36 @@ void collapse_and_report (int x, int y)
     cantcontinue("ERROR: Max number of steps UINTMAX = %llu reached. I must stop.\n", ULLONG_MAX);
   }
   nbsteps++;
-  report_collapse (); 
+  report_collapse ();
   TRACEOUT;
+}
+
+bool check_stabilized (FILE * errfile)
+{
+  bool res = true;
+  bool finished = false;
+  long unsigned int count = 0;
+  int startx = 0;
+  int starty = 0;
+  int x, y;
+  if (asymmetrical_job) { startx = xmin; starty = ymin; }
+  do {
+    finished = true; /* tentatively */
+    for (x = startx; x <= xmax; x++) {
+      for (y = starty; y <= ymax; y++) {
+	if (cboard[x*ydim+y] > 3) {
+	  finished = false;
+	  count++;
+	}
+      }
+    }
+  } while (finished == false);
+  if (count > 0) {
+    res = false;
+    if (errfile != NULL)
+      fprintf (errfile, "ERROR: %s: Safety check found %lu unstable cells\n", __func__, count);
+  }
+  return res;
 }
 
 void normalize_and_report ( void )
@@ -286,35 +408,14 @@ void normalize_and_report ( void )
 #ifndef NDEBUG
   // FIXME: REMOVE LATER
   // SENSIBLE SAFETY CHECK FOR CATCHING BUGS, BUT COSTLY ON LARGE BOARDS
-  bool finished = false;
-  int count = 0;
-  int startx = 0;
-  int starty = 0;
-  if (asymmetrical_job) { startx = xmin; starty = ymin; }
-  do {
-    finished = true; /* tentatively */
-    for (x = startx; x <= xmax; x++) {
-      for (y = starty; y <= ymax; y++) {
-	if (cboard[x*ydim+y] > 3) {
-	  finished = false;
-	  count++;
-	  fprintf (stdout, "! Safety check has to collapse (%d,%d) val=%d\n", x, y, cboard[x*ydim+y]);
-	  collapse_and_report(x,y);
-	  if (! asymmetrical_job)
-	    cantcontinue("! FIXME: %s: SAFETY CHECK IS NOT COMPLETE ON SYMMETRICAL BOARDS", __func__);
-	}
-      }
-    }
-  } while (finished == false);
-  if (count > 0) {
-    fprintf (stdout, "ERROR: %s: Safety check had to collapse %d times\n", __func__, count);
-    fprintf (stderr, "ERROR: %s: Safety check had to collapse %d times\n", __func__, count);
-    fail();
-  }
+  if (check_stabilized (stderr) == false) fail();
 #endif /* NDEBUG */
 
  skip_all:
-  report_normal_form ();
+  report_normal_form(false);
+  if (selected_job == CONJ_JOB) {
+    check_and_report_N_array ();
+  }
   TRACEOUT;
 }
 
@@ -429,7 +530,6 @@ void dump_waitinglist (FILE * stream, bool statstoo)
 }
 
 /* READ A SNAPSHOT FILE */
-
 /* HEADER variables: where we store the data copied from snapshot header */
 static long int mass_snap, nbsteps_snap, diam_snap, c0_snap, c1_snap, c2_snap, c3_snap;
 
@@ -507,7 +607,6 @@ void init_board_line_from_snapshot (int x0, int y0, char * chars, int len, const
 }
 
 /* read a snapshot file, use it as board config after sanity check.
-
    If JUSTHEADER: only read header variables mass_snap etc., dont sanity check, dont touch board. */
 void init_board_contents_from_snapshot (const char * path, bool justheader)
 {

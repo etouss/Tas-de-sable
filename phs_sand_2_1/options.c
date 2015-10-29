@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <getopt.h>		/* parsing args & options */
 #include <string.h>		/* strcmp */
+#include <regex.h>		/* regular expressions: regcomp() */
 #endif /* MAKEDEPEND_IGNORE */
 
 #include "sand.h"
@@ -14,11 +15,10 @@
 extern void parse_options (int argc, char *argv[]);
 extern void display_help (FILE *stream);
 extern void display_version (FILE *stream);
+extern void parse_joption_arg (char * arg);
+extern void parse_ofile_arg (char * arg);
 
-extern void display_help 	(FILE *stream);
-extern void parse_ofile_arg     (char * arg);
-
-static bool   display_help_opt       = false; /* -h Causes exit */
+static int    display_help_opt       = 0; /* -h Causes exit */
 //static bool   display_flags_opt      = false; /* -l Causes exit */
 static bool   display_version_opt    = false; /* -v Causes exit */
 static bool   underground_opt	     = false; /* -u Detach from terminal */
@@ -43,18 +43,42 @@ void parse_ofile_arg (char * arg)
 #define _std_version_message_ 	"%s version %s\n"
 #define sand_optstring 		"hvj:ugGn:s:f:t:d:RT"
 #define _std_help_message_ 	"\
-Usage: %s [-n <num>] ..\n\
-\t-h : display this help message\n\
-\t-v : display version and exit\n\
-\t-j <jobname> : select job among { pile (= default), squareNNN, diamondNNN }\n\
-\t\tNumeric option NNN is number of extra grains (default = 1)\n\
-\t-u : underground mode, only output to record file\n\
-\t-[gG] : uses curses for displaying boards and info (-G : don't limit to terminal bounds)\n\
-\t-n <num> : set value for max mass (default = %d)\n\
-\t-s <num> : take a snapshot every <num> seconds (default = don't)\n\
-\t-f <filename> : start from given snapshot\n\
-\t-t <num> : set trace level\n\
-\t-d <num> : set value for max board dim (default = %d)\n\
+Usage: %s [options]\n\
+  -h\t\tPrint this message and exit. Longer help message with -h -h\n\
+  -v\t\tPrint version number and exit\n\
+  -n N\t\tSet value for max mass (default value = %d)\n\
+  -g, -G\tUses curses graphic library for displaying boards and info\n\
+  -j jobname\tChoose job (default job = pile). See longer help [-hh]\n\
+  -u\t\tUnderground mode, only output to record file\n\
+  -s N\t\tTake snapshot of board every N seconds (default value = no snapshots)\n\
+  -f filename\tStart from given snapshot\n\
+  -t N\t\tSet trace level (default value = 0 unless -g)\n\
+"
+
+#define _long_help_message_ 	"\
+Usage: %s [options]\n\
+  -hh\t\tPrint this message and exit\n\
+  -h\t\tPrint shorter help message and exit\n\
+  -n N\t\tSet value for max mass (default value = %d)\n\
+  -g\t\tUses curses graphic library for displaying boards and info\n\
+  -G\t\tLike -g but clip view of board when window is too small\n\
+  -R, -T\tWith -gG: only display Right (Top) half, the two can be combined\n\
+  -j jobname\tChoose job (default job = pile). Available jobs are\n\
+\t\t  - pile\tgrains stacked on origin\n\
+\t\t  - [B]square[N]\tB (default = 3) grains on each cell of (odd) square around origin\n\
+\t\t\twith N (default = 1 when B = 3, 0 otherwise) extra grains added at origin\n\
+\t\t  - [B]diamond[N]\tB (default = 3) grains on each cell of (even) lozenge around origin\n\
+\t\t\twith N (default = 1 when B = 3, 0 otherwise) extra grains added at origin\n\
+\t\t  - random[N]\tnew grains are added (pseudo-)randomly in odd square -N..+N\n\
+\t\t\taround origin (default value = %d)\n\
+\t\t  - conjN\tlike pile but test conjecture about N[i,j]>=N[i+1,j]\n\
+\t\t  - special\tused to try out unusual configurations\n\
+  -D\t\tCheat mode, don't collapse, useful for checking/viewing start configurations\n\
+  -u\t\tUnderground mode, only output to record file\n\
+  -s N\t\tTake snapshot of board every N seconds (default value = no snapshots)\n\
+  -f filename\tStart from given snapshot\n\
+  -t N\t\tSet trace level (default value = 0, or 1 with -gG)\n\
+  -d N\t\tSet max board dim (default value = %d)\n\
 "
 // NOT YET IMPLEMENTED:
 //\t-i : turn on interactive mode
@@ -102,7 +126,7 @@ void parse_options (int actual_argc, char *actual_argv[])
       if (anim_level == 0) set_value_for_anim_level(1); /* -G implies -t */
       break;
     case 'h':
-      display_help_opt = true; break;
+      display_help_opt++; break;
     case 'i':
       printf ("option -i not yet implemented\n");
       interactive_opt = true; break;
@@ -111,42 +135,8 @@ void parse_options (int actual_argc, char *actual_argv[])
     case 'v':
       display_version_opt = true; break;
     case 'j':
-      assert(optarg);
-      if (strcmp(optarg, "pile") == 0) {
-	selected_job = PILE_JOB;
-      } else if (strncmp(optarg, "square", 6) == 0) {
-	selected_job = SQUARE_JOB;
-	if (optarg[6] == '\0') {
-	  nb_toppling_grains = 1;	/* default */
-	} else {
-	  read_longint_val_in_range(optarg+6, &nb_toppling_grains, 0, MAX_ALLOWED_TOPPLING, "nb_toppling_grains");
-	}
-	TRACEMESS("optarg \"%s\" gives nb_toppling = %ld.", optarg, nb_toppling_grains);
-      } else if (strncmp(optarg, "diamond", 7) == 0) {
-	selected_job = DIAMOND_JOB;
-	if (optarg[7] == '\0') {
-	  nb_toppling_grains = 1;	/* default */
-	} else {
-	  read_longint_val_in_range(optarg+7, &nb_toppling_grains, 0, MAX_ALLOWED_TOPPLING, "nb_toppling_grains");
-	}
-	TRACEMESS("optarg \"%s\" gives nb_toppling = %ld.", optarg, nb_toppling_grains);
-      } else if (strncmp(optarg, "random", 6) == 0) {
-	selected_job = RANDOM_JOB;
-	if (optarg[6] == '\0') {
-	  random_radius = DEFAULT_RANDOM_RADIUS;
-	} else {
-	  read_longint_val_in_range(optarg+6, &random_radius, 0, MAX_ALLOWED_RANDOM_RADIUS, "random_radius");
-	}
-	TRACEMESS("optarg \"%s\" gives random_radius = %ld.", optarg, random_radius);
-      } else if (strncmp(optarg, "special", 7) == 0) {
-	selected_job = SPECIAL_JOB;
-	if (optarg[7] != '\0') {
-	  read_longint_val_in_range(optarg+7, &sp_job_number, 0, MAX_SPECIAL_JOB, "sp_job_number");
-	}
-	TRACEMESS("optarg \"%s\" gives sp_job_number = %ld.", optarg, sp_job_number);
-      } else {
-	cantcontinue ("Option \"-j %s\" not understood.\n", optarg);
-      }
+      assert(optarg); /* expects arg for job */
+      parse_joption_arg(optarg);
       break;
     case 'o': /* expects path for record file */
       assert(optarg);
@@ -217,10 +207,77 @@ void parse_options (int actual_argc, char *actual_argv[])
   TRACEOUT;
 }
 
+#define NMATCHJOBS 4 /* number of subexps in rx4jobs */
+static regex_t regex1;		/* FIXME: share with rx in board.c */
+static regmatch_t matches[NMATCHJOBS];
+/* BEWARE: when extending the following RX4SQDIJOBS. Check test for selected_job in parse_joption_arg*/
+static const char *rx4sqdijobs = "^[ \t]*([0-9]*)(square|diamond)([0-9]*)[ \t]*$";
+
+void parse_joption_arg (char * arg)
+{
+  if (strcmp(arg, "conjN") == 0) {
+    selected_job = CONJ_JOB;
+  } else if (strcmp(arg, "pile") == 0) {
+    selected_job = PILE_JOB;
+  } else if (regcomp(&regex1, rx4sqdijobs, REG_EXTENDED)) {
+    cantcontinue("ERROR: %s: regcomp(rx4sqdijobs) does not compile.\n", __func__);
+  } else if (0 == regexec(&regex1, arg, NMATCHJOBS, matches, 0)) {
+    if (optarg[matches[2].rm_so] == 's') {
+      selected_job = SQUARE_JOB;
+    } else {			/* at the moment the rx leaves only 2 options */
+      selected_job = DIAMOND_JOB;
+    }
+    TRACEMESS("%s matches rx4sqdijobs", arg);
+    int mbeg = matches[1].rm_so;
+    int mend = matches[1].rm_eo;
+    if (mbeg < mend) {
+      arg[mend]='\0';
+      TRACEMESS("\t-jsquare|diamond has prefix arg %s", arg+mbeg);
+      read_longint_val_in_range(arg+mbeg, &base_thickness, 0, MAX_ALLOWED_BASETHICKNESS, "base_thickness");
+    }  else {
+      base_thickness = (selected_job == SQUARE_JOB
+			? DEFAULT_SQUARE_THICKNESS
+			: DEFAULT_DIAMOND_THICKNESS);
+    }
+    mbeg = matches[3].rm_so;
+    mend = matches[3].rm_eo;
+    if (mbeg < mend) {
+      arg[mend]='\0';
+      TRACEMESS("\t-jsquare|diamond has suffix arg %s", arg+mbeg);
+      read_longint_val_in_range(arg+mbeg, &nb_toppling_grains, 0, MAX_ALLOWED_TOPPLING, "nb_toppling_grains");
+    } else if (selected_job == SQUARE_JOB) {
+      nb_toppling_grains = (base_thickness == DEFAULT_SQUARE_THICKNESS ? 1 : 0); /* default */
+    } else {
+      nb_toppling_grains = (base_thickness == DEFAULT_DIAMOND_THICKNESS ? 1 : 0); /* default */
+    }
+    TRACEMESS("-jsquare|diamond: thickness=%ld toppling=%ld", base_thickness, nb_toppling_grains);
+  } else if (strncmp(arg, "random", 6) == 0) {
+    selected_job = RANDOM_JOB;
+    if (arg[6] == '\0') {
+      random_radius = DEFAULT_RANDOM_RADIUS;
+    } else {
+      read_longint_val_in_range(arg+6, &random_radius, 0, MAX_ALLOWED_RANDOM_RADIUS, "random_radius");
+    }
+    TRACEMESS("arg \"%s\" gives random_radius = %ld.", arg, random_radius);
+  } else if (strncmp(arg, "special", 7) == 0) {
+    selected_job = SPECIAL_JOB;
+    if (arg[7] != '\0') {
+      read_longint_val_in_range(arg+7, &sp_job_number, 0, MAX_SPECIAL_JOB, "sp_job_number");
+    }
+    TRACEMESS("arg \"%s\" gives sp_job_number = %ld.", arg, sp_job_number);
+  } else {
+    cantcontinue ("Option \"-j %s\" not understood.\n", arg);
+  }
+}
+
 void display_help (FILE *stream)
 {
-  fprintf (stream, _std_help_message_, _std_sand_name_,
-	   DEFAULT_HEIGHT, DEFAULT_MAX_DIM);
+  if (display_help_opt <= 1) {	/* short help message */
+    fprintf (stream, _std_help_message_, _std_sand_name_, DEFAULT_HEIGHT);
+  } else { /* long help message */
+    fprintf (stream, _long_help_message_, _std_sand_name_, DEFAULT_HEIGHT,
+	     DEFAULT_RANDOM_RADIUS, DEFAULT_MAX_DIM);
+  }
 }
 
 void display_version (FILE *stream)
@@ -265,11 +322,11 @@ void process_calling_arguments (int argc, char *argv[])
   if (display_help_opt) display_help (stdout);
   if (display_help_opt || display_version_opt) {
     TRACEOUT;
-    exit (EXIT_SUCCESS);	/* exits on -h and -l */
+    exit (EXIT_SUCCESS);	/* exits on -h and -v */
   }
   if (graphical_opt) {
     if (underground_opt) {
-      cantcontinue("Graphical -[gG] and underground -u modes incompatible.\n");
+      cantcontinue("Graphical -g, -G and underground -u modes incompatible.\n");
     } else {
       display_mode = CURSING_MODE;
     }
@@ -285,6 +342,10 @@ void process_calling_arguments (int argc, char *argv[])
     }
     display_mode = UNDERGROUND_MODE;
   } /* underground_mode */
+  if (display_mode != CURSING_MODE && (curse_only_top_half || curse_only_right_half)) {
+    cantcontinue("-R or -T require -g or -G.\n");
+  }
+
   TRACEOUT;
 }
 

@@ -13,7 +13,7 @@
    - RECORDING means writing on the RECORD_FILE,
    - REPORTING is more general, it includes deciding to RECORD or not, and whether to involve the user.
 
-   The reporting functions are called after specific events (at the moment REPORT_NORMAL_FORM or REPORT_COLLAPSE). They decide when/what to report and record. This involves story history data like "last area reported" etc. 
+   The reporting functions are called after specific events (at the moment REPORT_NORMAL_FORM or REPORT_COLLAPSE). They decide when/what to report and record. This involves story history data like "last area reported" etc.
 */
 
 void report_collapse ( void )
@@ -23,10 +23,10 @@ void report_collapse ( void )
   }
 }
 
-void report_normal_form ( void )
+void report_normal_form (bool initial_board)
 {
   /* history variables: local count between two normal forms */
-  static int prev_area = -1;	
+  static int prev_area = -1;
   // not yet used static int prev_diam = -1;
   // not yet used static unsigned long long int prev_nbsteps = 0;
   TRACEINW(": mass=%d", mass);
@@ -82,13 +82,29 @@ void report_normal_form ( void )
       cantcontinue("ERROR: %s: Unknown selected_report = %d.\n", __func__, selected_report);
     }
   } else if (display_mode == CURSING_MODE) {			/* cursing mode */
+    if (initial_board)
+      display_cursing_dims();	/* dims displayed when changed */
     display_cursing_mass_data();
   } else {
     assert(display_mode == UNDERGROUND_MODE);
   }
   /* MAINTAIN HISTORY */
-  //  prev_nbsteps = nbsteps; prev_diam = diam; 
+  //  prev_nbsteps = nbsteps; prev_diam = diam;
   prev_area = area;		/* update */
+
+  /* DELAY AFTER DISPLAY */
+  if (display_mode == CURSING_MODE) {
+    //FIXME: no display delay in interactive mode
+    if (anim_level < 2) {
+      if (mass < 200) {
+	usleep(DELAYAFTERDISPLAY);
+      } else {					/* delays add up in the long run */
+	usleep(DELAYAFTERDISPLAY * 200 / mass); /* decreasing delay */
+      }
+    } else {
+      wait_in_cursing (false);
+    }
+  }
   TRACEOUT;
 }
 
@@ -197,11 +213,12 @@ char * jobname_string ( void )
   TRACEINW("jn_str now: %p", jn_str);
   if (jn_str == NULL) {
     switch(selected_job) {
-    case PILE_JOB:    asprintf(&jn_str, "pile");break;
-    case SQUARE_JOB:  asprintf(&jn_str, "sqr%ld", nb_toppling_grains);break;
-    case DIAMOND_JOB: asprintf(&jn_str, "diam%ld", nb_toppling_grains);break;
-    case RANDOM_JOB:  asprintf(&jn_str, "rand%ld", random_radius);break;
-    case SPECIAL_JOB: asprintf(&jn_str, "spec%ld", sp_job_number);break;
+    case CONJ_JOB:    asprintf(&jn_str, "conjN"); break;
+    case PILE_JOB:    asprintf(&jn_str, "pile"); break;
+    case SQUARE_JOB:  asprintf(&jn_str, "%ldsqr%ld", base_thickness, nb_toppling_grains); break;
+    case DIAMOND_JOB: asprintf(&jn_str, "%lddiam%ld", base_thickness, nb_toppling_grains); break;
+    case RANDOM_JOB:  asprintf(&jn_str, "rand%ld", random_radius); break;
+    case SPECIAL_JOB: asprintf(&jn_str, "spec%ld", sp_job_number); break;
     default:
       cantcontinue("ERROR: %s: Doesn't know about job %d.\n", __func__, selected_job);
     }
